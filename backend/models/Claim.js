@@ -1,0 +1,33 @@
+const mongoose = require("mongoose");
+
+const claimSchema = new mongoose.Schema({
+
+    itemId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Item",
+        required: true
+    },
+
+    claimantName: {
+        type: String,
+        required: true
+    },
+
+    claimantEmail: {
+        type: String,
+        required: true
+    },
+
+    message: {
+        type: String,
+        required: true
+    },
+
+    status: {
+        type: String,
+        default: "pending"
+    }
+
+}, { timestamps: true });
+
+module.exports = mongoose.model("Claim", claimSchema);
