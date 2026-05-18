@@ -1,8 +1,53 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import axios from "axios";
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import logo from "../assets/aditya-logo.png";
 
 const Login = () => {
+
+    const navigate = useNavigate();
+
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+
+    const handleSubmit = async (e) => {
+
+        e.preventDefault();
+
+        try {
+
+            const response = await axios.post(
+                "http://localhost:5000/api/auth/login",
+                {
+                    email,
+                    password
+                }
+            );
+
+            alert(response.data.message);
+
+            console.log(response.data);
+
+            // Store token
+            localStorage.setItem("token", response.data.token);
+
+            // Store user
+            localStorage.setItem(
+                "user",
+                JSON.stringify(response.data.user)
+            );
+
+            // Redirect
+            navigate("/dashboard");
+
+        } catch (error) {
+
+            console.log(error);
+
+            alert(error.response?.data?.message || "Login Failed");
+        }
+    };
+
     return (
         <div className="min-h-screen bg-[#F4F7FB] flex items-center justify-center px-6">
 
@@ -41,9 +86,14 @@ const Login = () => {
                         Login to continue
                     </p>
 
-                    <form className="mt-10 space-y-6">
+                    <form
+                        onSubmit={handleSubmit}
+                        className="mt-10 space-y-6"
+                    >
 
+                        {/* Email */}
                         <div>
+
                             <label className="block mb-2 font-medium text-gray-700">
                                 College Email
                             </label>
@@ -51,11 +101,16 @@ const Login = () => {
                             <input
                                 type="email"
                                 placeholder="Enter your email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
                                 className="w-full border border-gray-300 rounded-xl px-5 py-4 outline-none focus:border-[#0D47A1]"
                             />
+
                         </div>
 
+                        {/* Password */}
                         <div>
+
                             <label className="block mb-2 font-medium text-gray-700">
                                 Password
                             </label>
@@ -63,11 +118,16 @@ const Login = () => {
                             <input
                                 type="password"
                                 placeholder="Enter your password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
                                 className="w-full border border-gray-300 rounded-xl px-5 py-4 outline-none focus:border-[#0D47A1]"
                             />
+
                         </div>
 
+                        {/* Button */}
                         <button
+                            type="submit"
                             className="w-full bg-[#0D47A1] text-white py-4 rounded-xl text-lg font-semibold hover:bg-blue-800 transition"
                         >
                             Login
@@ -75,7 +135,9 @@ const Login = () => {
 
                     </form>
 
+                    {/* Register Link */}
                     <p className="text-center mt-6 text-gray-600">
+
                         Don’t have an account?
 
                         <Link
@@ -84,6 +146,7 @@ const Login = () => {
                         >
                             Register
                         </Link>
+
                     </p>
 
                 </div>

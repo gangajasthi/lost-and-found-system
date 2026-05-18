@@ -1,8 +1,49 @@
-import React from "react";
+import axios from "axios";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import logo from "../assets/aditya-logo.png";
 
 const Register = () => {
+
+    const [name, setName] = useState("");
+    const [email, setEmail] = useState("");
+    const [mobile, setMobile] = useState("");
+    const [password, setPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
+
+    const handleSubmit = async (e) => {
+
+        e.preventDefault();
+
+        if (password !== confirmPassword) {
+            alert("Passwords do not match");
+            return;
+        }
+
+        try {
+
+            const response = await axios.post(
+                "http://localhost:5000/api/auth/register",
+                {
+                    name,
+                    email,
+                    mobile,
+                    password
+                }
+            );
+
+            alert(response.data.message);
+
+            console.log(response.data);
+
+        } catch (error) {
+
+            console.log(error);
+
+            alert(error.response?.data?.message || "Registration Failed");
+        }
+    };
+
     return (
         <div className="min-h-screen bg-[#F4F7FB] flex items-center justify-center px-6 py-10">
 
@@ -42,7 +83,10 @@ const Register = () => {
                         Fill your details to continue
                     </p>
 
-                    <form className="mt-10 space-y-5">
+                    <form
+                        onSubmit={handleSubmit}
+                        className="mt-10 space-y-5"
+                    >
 
                         {/* Full Name */}
                         <div>
@@ -54,6 +98,8 @@ const Register = () => {
                             <input
                                 type="text"
                                 placeholder="Enter full name"
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
                                 className="w-full border border-gray-300 rounded-xl px-5 py-4 outline-none focus:border-[#0D47A1]"
                             />
 
@@ -69,6 +115,8 @@ const Register = () => {
                             <input
                                 type="email"
                                 placeholder="example@adityauniversity.in"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
                                 className="w-full border border-gray-300 rounded-xl px-5 py-4 outline-none focus:border-[#0D47A1]"
                             />
 
@@ -84,6 +132,8 @@ const Register = () => {
                             <input
                                 type="text"
                                 placeholder="Enter mobile number"
+                                value={mobile}
+                                onChange={(e) => setMobile(e.target.value)}
                                 className="w-full border border-gray-300 rounded-xl px-5 py-4 outline-none focus:border-[#0D47A1]"
                             />
 
@@ -99,6 +149,8 @@ const Register = () => {
                             <input
                                 type="password"
                                 placeholder="Create password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
                                 className="w-full border border-gray-300 rounded-xl px-5 py-4 outline-none focus:border-[#0D47A1]"
                             />
 
@@ -114,6 +166,8 @@ const Register = () => {
                             <input
                                 type="password"
                                 placeholder="Confirm password"
+                                value={confirmPassword}
+                                onChange={(e) => setConfirmPassword(e.target.value)}
                                 className="w-full border border-gray-300 rounded-xl px-5 py-4 outline-none focus:border-[#0D47A1]"
                             />
 
@@ -121,6 +175,7 @@ const Register = () => {
 
                         {/* Button */}
                         <button
+                            type="submit"
                             className="w-full bg-[#0D47A1] text-white py-4 rounded-xl text-lg font-semibold hover:bg-blue-800 transition"
                         >
                             Register
