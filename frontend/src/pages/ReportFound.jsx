@@ -81,6 +81,10 @@ export default function ReportFound() {
 
       formData.append("type", "found");
 
+      const user = JSON.parse(localStorage.getItem("user"));
+
+      formData.append("userId", user._id);
+
       if (form.image) {
         formData.append("image", form.image);
       }

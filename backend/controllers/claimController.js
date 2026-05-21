@@ -6,7 +6,10 @@ exports.createClaim = async (req, res) => {
 
     try {
 
-        const claim = await Claim.create(req.body);
+        const claim = await Claim.create({
+            ...req.body,
+            userId: req.body.userId
+        });
 
         res.status(201).json({
             message: "Claim Submitted Successfully",

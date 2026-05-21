@@ -78,6 +78,10 @@ export default function ReportLost() {
 
             formData.append("type", "lost");
 
+            const user = JSON.parse(localStorage.getItem("user"));
+
+            formData.append("userId", user._id);
+
             if (form.image) {
                 formData.append("image", form.image);
             }

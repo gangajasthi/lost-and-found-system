@@ -6,8 +6,12 @@ const axios = require("axios");
 exports.createItem = async (req, res) => {
 
     try {
+        console.log(req.body);
 
-        const newItem = await Item.create(req.body);
+        const newItem = await Item.create({
+            ...req.body,
+            userId: req.body.userId
+        });
 
         // Find opposite type items
         const oppositeType =
