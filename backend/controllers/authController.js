@@ -5,24 +5,31 @@ const jwt = require("jsonwebtoken");
 
 // REGISTER
 exports.registerUser = async (req, res) => {
+
     try {
+
+        console.log(req.body);
 
         const { name, email, mobile, password } = req.body;
 
         // Check university email
         if (!email.endsWith("@adityauniversity.in")) {
+
             return res.status(400).json({
                 message: "Use university email only"
             });
+
         }
 
         // Check existing user
         const existingUser = await User.findOne({ email });
 
         if (existingUser) {
+
             return res.status(400).json({
                 message: "User already exists"
             });
+
         }
 
         // Hash password
@@ -42,10 +49,15 @@ exports.registerUser = async (req, res) => {
         });
 
     } catch (error) {
+
+        console.log(error);
+
         res.status(500).json({
             message: error.message
         });
+
     }
+
 };
 
 
@@ -60,18 +72,22 @@ exports.loginUser = async (req, res) => {
         const user = await User.findOne({ email });
 
         if (!user) {
+
             return res.status(400).json({
                 message: "User not found"
             });
+
         }
 
         // Compare password
         const isMatch = await bcrypt.compare(password, user.password);
 
         if (!isMatch) {
+
             return res.status(400).json({
                 message: "Invalid password"
             });
+
         }
 
         // Generate token
@@ -89,9 +105,12 @@ exports.loginUser = async (req, res) => {
 
     } catch (error) {
 
+        console.log(error);
+
         res.status(500).json({
             message: error.message
         });
 
     }
+
 };

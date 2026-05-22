@@ -1,5 +1,6 @@
-import axios from "axios";
+// import { useState } from "react";
 import { useState } from "react";
+import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import DashboardLayout from "../components/DashboardLayout";
 import FileUpload from "../components/FileUpload";
@@ -59,69 +60,63 @@ export default function ReportFound() {
     }));
 
 
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+  //   setLoading(true);
+  //   await new Promise((r) => setTimeout(r, 1500));
+  //   setLoading(false);
+  //   setSubmitted(true);
+  // };
   const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    e.preventDefault();
+  try {
 
     setLoading(true);
 
-    try {
+    const formData = new FormData();
 
-      const formData = new FormData();
+    formData.append("title", form.title);
+    formData.append("description", form.description);
+    formData.append("category", form.category);
+    formData.append("location", form.foundLocation);
+    formData.append("date", form.dateFound);
+    formData.append("type", "found");
 
-      formData.append("title", form.title);
+    const user = JSON.parse(
+      localStorage.getItem("user")
+    );
 
-      formData.append("description", form.description);
+    formData.append(
+      "userId",
+      user?._id
+    );
 
-      formData.append("category", form.category);
-
-      formData.append("location", form.foundLocation);
-
-      formData.append("date", form.dateFound);
-
-      formData.append("type", "found");
-
-      const user = JSON.parse(localStorage.getItem("user"));
-
-      formData.append("userId", user._id);
-
-      if (form.image) {
-        formData.append("image", form.image);
-      }
-
-      const response = await axios.post(
-        "http://localhost:5000/api/items",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
+    if (form.image) {
+      formData.append(
+        "image",
+        form.image
       );
-
-      console.log(response.data);
-
-      alert(response.data.message);
-
-      setSubmitted(true);
-
-    } catch (error) {
-
-      console.log(error);
-
-      alert(
-        error.response?.data?.message ||
-        "Failed to submit report"
-      );
-
-    } finally {
-
-      setLoading(false);
-
     }
-  };
 
+    await axios.post(
+      "http://localhost:5000/api/items",
+      formData
+    );
 
+    setSubmitted(true);
+
+  } catch (error) {
+
+    console.log(error);
+    alert("Failed to submit report");
+
+  } finally {
+
+    setLoading(false);
+
+  }
+};
   if (submitted) {
 
     return (

@@ -25,15 +25,8 @@ exports.createItem = async (req, res) => {
 
         for (let item of items) {
 
-            const response = await axios.post(
-                "http://127.0.0.1:8000/text-similarity",
-                {
-                    text1: newItem.description,
-                    text2: item.description
-                }
-            );
-
-            const similarity = response.data.similarity;
+            // TEMPORARY AI OFF
+            const similarity = 0;
 
             console.log("SIMILARITY SCORE:", similarity);
 
@@ -64,6 +57,63 @@ exports.createItem = async (req, res) => {
     }
 
 };
+// exports.createItem = async (req, res) => {
+
+//     try {
+
+//         const newItem = await Item.create(req.body);
+
+//         // Find opposite type items
+//         const oppositeType =
+//             newItem.type === "lost" ? "found" : "lost";
+
+//         const items = await Item.find({
+//             type: oppositeType
+//         });
+
+//         let matchedItems = [];
+
+//         for (let item of items) {
+
+//            // const response = await axios.post(
+//             //     "http://127.0.0.1:8000/text-similarity",
+//             //     {
+//             //         text1: newItem.description,
+//             //         text2: item.description
+//             //     }
+//             // );
+
+//             //const similarity = response.data.similarity;
+
+//             console.log("SIMILARITY SCORE:", similarity);
+
+//             // TEMPORARY TEST CONDITION
+//             if (similarity > 0) {
+
+//                 matchedItems.push({
+//                     item,
+//                     similarity
+//                 });
+
+//             }
+
+//         }
+
+//         res.status(201).json({
+//             message: "Item Posted Successfully",
+//             newItem,
+//             matchedItems
+//         });
+
+//     } catch (error) {
+
+//         res.status(500).json({
+//             message: error.message
+//         });
+
+//     }
+
+// };
 
 
 // GET ALL ITEMS

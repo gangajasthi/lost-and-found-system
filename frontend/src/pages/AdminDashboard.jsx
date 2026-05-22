@@ -1,4 +1,6 @@
-import { useState } from "react";
+//import { useState } from "react";
+import { useEffect, useState } from "react";
+import axios from "axios";
 import DashboardLayout from "../components/DashboardLayout";
 import StatusBadge from "../components/StatusBadge";
 
@@ -63,27 +65,7 @@ const COLOR_MAP = {
   purple: { bg: "bg-purple-50", icon: "bg-purple-100 text-purple-600", ring: "ring-purple-200" },
 };
 
-// ── Pending Reports ──────────────────────────────────────────────
-const PENDING_REPORTS = [
-  {
-    id: 1, type: "lost", title: "Apple AirPods Pro", category: "Electronics",
-    description: "White AirPods Pro with MagSafe case. Lost near the auditorium after the seminar.",
-    submittedBy: "Ravi Kumar (21CSE045)", date: "2025-01-14", location: "Auditorium",
-    status: "pending",
-  },
-  {
-    id: 2, type: "found", title: "Debit Card (SBI)", category: "ID Card / Documents",
-    description: "SBI debit card found on a bench in the library. Cardholder name visible.",
-    submittedBy: "Priya Sharma (22ECE012)", date: "2025-01-13", location: "Library",
-    status: "pending",
-  },
-  {
-    id: 3, type: "lost", title: "Casio Scientific Calculator", category: "Stationery",
-    description: "Casio FX-991EX ClassWiz, black, with name sticker on the back.",
-    submittedBy: "Mohammed Ali (21ME078)", date: "2025-01-12", location: "Labs Complex",
-    status: "pending",
-  },
-];
+
 
 // ── Recent Activity ──────────────────────────────────────────────
 const RECENT_ACTIVITY = [
@@ -104,14 +86,157 @@ const ACT_COLORS = {
 
 // ── Component ────────────────────────────────────────────────────
 export default function AdminDashboard() {
-  const [reports, setReports] = useState(PENDING_REPORTS);
+  //const [reports, setReports] = useState(PENDING_REPORTS);
+  const [reports, setReports] = useState([]);
   const [actionFeedback, setActionFeedback] = useState(null);
+  useEffect(() => {
+  fetchReports();
+}, []);
 
-  const handleAction = (id, action) => {
-    setReports((prev) => prev.filter((r) => r.id !== id));
-    setActionFeedback({ action, id });
-    setTimeout(() => setActionFeedback(null), 3000);
-  };
+const fetchReports = async () => {
+  try {
+    const response = await axios.get(
+      "http://localhost:5000/api/items"
+    );
+
+    setReports(response.data);
+
+  } catch (error) {
+    console.log(error);
+  }
+};
+const totalReports = reports.length;
+
+const pendingReports = reports.filter(
+  (r) => r.status !== "approved"
+).length;
+
+const resolvedItems = reports.filter(
+  (r) => r.status === "approved"
+).length;
+
+const activeClaims = 0;
+
+const lostReports = reports.filter(
+  (r) => r.type === "lost"
+).length;
+
+const foundReports = reports.filter(
+  (r) => r.type === "found"
+).length;
+
+const recoveryRate =
+  totalReports > 0
+    ? Math.round((resolvedItems / totalReports) * 100)
+    : 0;
+//   useEffect(() => {
+
+//     fetchReports();
+
+// }, []);
+
+// const fetchReports = async () => {
+
+//     try {
+
+//         const response = await axios.get(
+//             "http://localhost:5000/api/items"
+//         );
+
+//         console.log(response.data);
+
+//         setReports(response.data);
+
+//     } catch (error) {
+
+//         console.log(error);
+
+//     }
+
+// };
+
+//   const handleAction = async (id, action) => {
+
+//   try {
+
+//     if (action === "rejected") {
+
+//       await axios.delete(
+//         `http://localhost:5000/api/items/${id}`
+//       );
+
+//     }
+
+//     if (action === "approved") {
+
+//       await axios.put(
+//         `http://localhost:5000/api/items/${id}`,
+//         {
+//           status: "approved",
+//         }
+//       );
+
+//     }
+
+//     fetchReports();
+
+//     setActionFeedback({
+//       action,
+//       id,
+//     });
+
+//     setTimeout(() => {
+//       setActionFeedback(null);
+//     }, 3000);
+
+//   } catch (error) {
+
+//     console.log(error);
+
+//   }
+
+// };
+const handleAction = async (id, action) => {
+
+    try {
+
+        if (action === "rejected") {
+
+            await axios.delete(
+                `http://localhost:5000/api/items/${id}`
+            );
+
+        }
+
+        if (action === "approved") {
+
+            await axios.put(
+                `http://localhost:5000/api/items/${id}`,
+                {
+                    status: "approved"
+                }
+            );
+
+        }
+
+        fetchReports();
+
+        setActionFeedback({
+            action,
+            id
+        });
+
+        setTimeout(() => {
+            setActionFeedback(null);
+        }, 3000);
+
+    } catch (error) {
+
+        console.log(error);
+
+    }
+
+};
 
   return (
     <DashboardLayout isAdmin>
@@ -148,7 +273,14 @@ export default function AdminDashboard() {
               <div className={`w-11 h-11 rounded-xl flex items-center justify-center mb-3 ring-2 ${c.icon} ${c.ring}`}>
                 {stat.icon}
               </div>
-              <p className="text-2xl font-black text-gray-900 leading-tight">{stat.value}</p>
+              <p className="text-2xl font-black text-gray-900 leading-tight">
+                {stat.label === "Total Reports"
+                  ? totalReports
+                  : stat.label === "Pending Approvals"
+                  ? pendingReports
+                  : stat.label === "Items Resolved"
+                  ? resolvedItems
+                  : activeClaims}</p>
               <p className="text-xs font-semibold text-gray-600 mt-0.5">{stat.label}</p>
               <p className={`text-[11px] font-medium mt-1 ${stat.positive ? "text-emerald-600" : "text-amber-600"}`}>
                 {stat.change}
@@ -219,9 +351,9 @@ export default function AdminDashboard() {
                         </div>
                         <p className="text-xs text-gray-500 mb-2 line-clamp-2">{report.description}</p>
                         <div className="flex flex-wrap gap-3 text-xs text-gray-400">
-                          <span>👤 {report.submittedBy}</span>
+                          <span>👤 {report.userId?.name || "Unknown User"}</span>
                           <span>📍 {report.location}</span>
-                          <span>📅 {report.date}</span>
+                          <span>📅 {new Date(report.createdAt).toLocaleDateString()}</span>
                         </div>
                       </div>
                     </div>
@@ -229,7 +361,8 @@ export default function AdminDashboard() {
                     {/* Actions */}
                     <div className="flex gap-2 mt-4 pl-14">
                       <button
-                        onClick={() => handleAction(report.id, "approved")}
+                        //onClick={() => handleAction(report.id, "approved")}
+                        onClick={() => handleAction(report._id, "approved")}
                         className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-500 text-white text-xs font-bold hover:bg-emerald-600 transition-colors shadow-sm"
                       >
                         <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -238,7 +371,8 @@ export default function AdminDashboard() {
                         Approve
                       </button>
                       <button
-                        onClick={() => handleAction(report.id, "rejected")}
+                        //onClick={() => handleAction(report.id, "rejected")}
+                        onClick={() => handleAction(report._id, "rejected")}
                         className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-red-50 text-red-600 border border-red-200 text-xs font-bold hover:bg-red-100 transition-colors"
                       >
                         <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -263,10 +397,23 @@ export default function AdminDashboard() {
           {/* Quick Stats Row */}
           <div className="grid grid-cols-3 gap-3 mt-4">
             {[
-              { label: "Lost Reports", value: "87", color: "orange" },
-              { label: "Found Reports", value: "61", color: "teal" },
-              { label: "Recovery Rate", value: "63%", color: "blue" },
-            ].map((s) => (
+                {
+                    label: "Lost Reports",
+                    value: lostReports,
+                    color: "orange",
+            },
+                {
+                    label: "Found Reports",
+                    value: foundReports,
+                    color: "teal",
+           },
+              {
+                    label: "Recovery Rate",
+                    value: `${recoveryRate}%`,
+                    color: "blue",
+    },
+            ]
+            .map((s) => (
               <div key={s.label} className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 text-center">
                 <p className={`text-2xl font-black
                   ${s.color === "orange" ? "text-orange-500" : s.color === "teal" ? "text-teal-600" : "text-blue-600"}`}>

@@ -1,54 +1,120 @@
-import axios from "axios";
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import API from "../api/axios";
 import logo from "../assets/aditya-logo.png";
 
 const Login = () => {
 
     const navigate = useNavigate();
 
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
+    const [formData, setFormData] = useState({
+        email: "",
+        password: ""
+    });
 
-    const handleSubmit = async (e) => {
+    const handleChange = (e) => {
 
-        e.preventDefault();
+        setFormData({
+            ...formData,
+            [e.target.name]: e.target.value
+        });
 
-        try {
-
-            const response = await axios.post(
-                "http://localhost:5000/api/auth/login",
-                {
-                    email,
-                    password
-                }
-            );
-
-            alert(response.data.message);
-
-            console.log(response.data);
-
-            // Store token
-            localStorage.setItem("token", response.data.token);
-
-            // Store user
-            localStorage.setItem(
-                "user",
-                JSON.stringify(response.data.user)
-            );
-
-            // Redirect
-            navigate("/dashboard");
-
-        } catch (error) {
-
-            console.log(error);
-
-            alert(error.response?.data?.message || "Login Failed");
-        }
     };
 
+    // const handleSubmit = async (e) => {
+
+    //     e.preventDefault();
+
+    //     try {
+
+    //         const response = await API.post(
+    //             "/auth/login",
+    //             formData
+    //         );
+
+    //         console.log(response.data);
+
+    //         // Save token
+    //         localStorage.setItem(
+    //             "token",
+    //             response.data.token
+    //         );
+
+    //         // Save user
+    //         localStorage.setItem(
+    //             "user",
+    //             JSON.stringify(response.data.user)
+    //         );
+
+    //         alert("Login Successful");
+
+    //         navigate("/dashboard");
+
+    //     } catch (error) {
+
+    //         console.log(error);
+
+    //         alert(
+    //             error.response?.data?.message ||
+    //             "Login Failed"
+    //         );
+
+    //     }
+
+    // };
+    const handleSubmit = async (e) => {
+
+    e.preventDefault();
+
+    try {
+
+        const response = await API.post(
+            "/auth/login",
+            formData
+        );
+
+        console.log(response.data);
+
+        // Save token
+        localStorage.setItem(
+            "token",
+            response.data.token
+        );
+
+        // Save user
+    localStorage.setItem(
+        "user",
+        JSON.stringify(response.data.user)
+);
+
+        alert("Login Successful");
+
+        //navigate("/dashboard");
+        if (response.data.user.role === "admin") {
+
+    navigate("/admin-dashboard");
+
+} else {
+
+    navigate("/dashboard");
+
+}
+
+    } catch (error) {
+
+        console.log(error);
+
+        alert(
+            error.response?.data?.message ||
+            "Login Failed"
+        );
+
+    }
+
+};
+
     return (
+
         <div className="min-h-screen bg-[#F4F7FB] flex items-center justify-center px-6">
 
             <div className="grid md:grid-cols-2 bg-white rounded-3xl shadow-2xl overflow-hidden max-w-6xl w-full">
@@ -87,8 +153,8 @@ const Login = () => {
                     </p>
 
                     <form
-                        onSubmit={handleSubmit}
                         className="mt-10 space-y-6"
+                        onSubmit={handleSubmit}
                     >
 
                         {/* Email */}
@@ -100,10 +166,14 @@ const Login = () => {
 
                             <input
                                 type="email"
+                                name="email"
+                                value={formData.email}
+                                onChange={handleChange}
                                 placeholder="Enter your email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 className="w-full border border-gray-300 rounded-xl px-5 py-4 outline-none focus:border-[#0D47A1]"
+                                required
                             />
 
                         </div>
@@ -117,10 +187,14 @@ const Login = () => {
 
                             <input
                                 type="password"
+                                name="password"
+                                value={formData.password}
+                                onChange={handleChange}
                                 placeholder="Enter your password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 className="w-full border border-gray-300 rounded-xl px-5 py-4 outline-none focus:border-[#0D47A1]"
+                                required
                             />
 
                         </div>
@@ -154,7 +228,9 @@ const Login = () => {
             </div>
 
         </div>
+
     );
+
 };
 
 export default Login;

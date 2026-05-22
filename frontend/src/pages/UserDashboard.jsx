@@ -6,15 +6,6 @@ const UserDashboard = () => {
 
     const navigate = useNavigate();
 
-    const handleLogout = () => {
-
-        localStorage.removeItem("token");
-
-        localStorage.removeItem("user");
-
-        navigate("/login");
-    };
-
     return (
 
         <div className="min-h-screen bg-[#F4F7FB]">

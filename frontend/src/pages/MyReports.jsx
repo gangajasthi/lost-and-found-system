@@ -1,5 +1,5 @@
-import axios from "axios";
 import { useEffect, useState } from "react";
+import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import DashboardLayout from "../components/DashboardLayout";
 import StatusBadge from "../components/StatusBadge";
@@ -17,57 +17,122 @@ export default function MyReports() {
   const [expandedId, setExpandedId] = useState(null);
   const [reports, setReports] = useState([]);
 
+// useEffect(() => {
+//   fetchMyReports();
+// }, []);
+
+// const fetchMyReports = async () => {
+
+//   try {
+
+//     const user = JSON.parse(
+//       localStorage.getItem("lf_user")
+//     );
+
+//     const response = await axios.get(
+//       "http://localhost:5000/api/items"
+//     );
+//     const myReports = response.data.filter(
+//   (item) => item.userId === user._id
+// );
+
+//     // const myReports = response.data.filter(
+//     //   (item) => item.userId?._id === user?._id
+//     // );
+
+//     setReports(myReports);
+
+//   } catch (error) {
+
+//     console.log(error);
+
+//   }
+
+// };
   useEffect(() => {
-    const fetchReports = async () => {
-      try {
-        const user = JSON.parse(
-          localStorage.getItem("user")
-        );
+  fetchReports();
+}, []);
+const fetchReports = async () => {
 
-        const response = await axios.get(
-          "http://localhost:5000/api/items"
-        );
+  try {
 
-        const myReports = response.data.filter(
-          (item) =>
-            item.userId === user._id ||
-            item.userId?._id === user._id
-        );
+    const response = await axios.get(
+      "http://localhost:5000/api/items"
+    );
 
-        setReports(myReports);
+    const user = JSON.parse(
+      localStorage.getItem("user")
+    );
 
-      } catch (error) {
-        console.log(error);
-      }
-    };
+    console.log("LOGGED USER =", user);
+    console.log("USER ID =", user._id);
 
-    fetchReports();
-  }, []);
+    const myReports = response.data.filter(
+      (item) =>
+        item.userId?.toString() ===
+        user?._id?.toString()
+    );
+
+    console.log("MY REPORTS =", myReports);
+
+    setReports(myReports);
+
+  } catch (error) {
+
+    console.log(error);
+
+  }
+
+};
+
+// const fetchReports = async () => {
+//   try {
+
+//     const response = await axios.get(
+//       "http://localhost:5000/api/items"
+//     );
+
+//     console.log("ALL ITEMS =", response.data);
+
+//     const user = JSON.parse(
+//       localStorage.getItem("user")
+//     );
+
+//     //console.log("LOGGED USER =", user);
+//     console.log("USER ID =", user._id);
+//     console.log("MY REPORTS =", myReports);
+
+//     // const myReports = response.data.filter(
+//     //   (item) => item.userId === user._id
+//     // );
+//     const myReports = response.data.filter(
+//   (item) =>
+//     item.userId?.toString() ===
+//     user?._id?.toString()
+// );
+
+//     console.log("FILTERED REPORTS =", myReports);
+
+//     setReports(myReports);
+
+//   } catch (error) {
+
+//     console.log(error);
+
+//   }
+// };
 
   const filtered = reports.filter((r) => {
-    const matchTab =
-      activeTab === "all" ||
-      r.type === activeTab;
-
-    const matchSearch =
-      r.title
-        .toLowerCase()
-        .includes(search.toLowerCase()) ||
-      r.category
-        .toLowerCase()
-        .includes(search.toLowerCase());
-
+    const matchTab = activeTab === "all" || r.type === activeTab;
+    const matchSearch = r.title.toLowerCase().includes(search.toLowerCase()) ||
+      r.category.toLowerCase().includes(search.toLowerCase());
     return matchTab && matchSearch;
   });
 
   const counts = {
     all: reports.length,
-    lost: reports.filter(
-      (r) => r.type === "lost"
-    ).length,
-    found: reports.filter(
-      (r) => r.type === "found"
-    ).length,
+    lost: reports.filter((r) => r.type === "lost").length,
+    found: reports.filter((r) => r.type === "found").length,
   };
 
   return (
@@ -207,19 +272,18 @@ export default function MyReports() {
           {filtered.map((report) => (
 
             <div
+              //key={report.id}
               key={report._id}
-              className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden"
+              className="bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow overflow-hidden"
             >
 
               <div
                 className="flex items-center gap-4 p-5 cursor-pointer"
-                onClick={() =>
-                  setExpandedId(
+                onClick={() => setExpandedId(
                     expandedId === report._id
                       ? null
                       : report._id
-                  )
-                }
+                  )}      
               >
 
                 <div className="flex-1">
@@ -239,21 +303,11 @@ export default function MyReports() {
                   </div>
 
                   <div className="flex items-center gap-3 mt-1 flex-wrap">
-
-                    <span className="text-xs text-gray-400">
-                      {report.category}
-                    </span>
-
-                    <span className="text-xs text-gray-400">
-                      {report.location}
-                    </span>
-
-                    <span className="text-xs text-gray-400">
-                      {new Date(
-                        report.date
-                      ).toLocaleDateString()}
-                    </span>
-
+                    <span className="text-xs text-gray-400">{report.category}</span>
+                    <span className="text-gray-300">·</span>
+                    <span className="text-xs text-gray-400">{report.location}</span>
+                    <span className="text-gray-300">·</span>
+                    <span className="text-xs text-gray-400">{new Date(report.createdAt).toLocaleDateString()}</span>
                   </div>
                 </div>
 
@@ -264,8 +318,8 @@ export default function MyReports() {
                 </div>
               </div>
 
+              {/* Expanded Details */}
               {expandedId === report._id && (
-
                 <div className="border-t border-gray-100 px-5 py-4 bg-gray-50">
 
                   <p className="text-sm text-gray-600 mb-4">
