@@ -165,16 +165,23 @@ const Login = () => {
                             </label>
 
                             <input
+                                // type="email"
+                                // name="email"
+                                // value={formData.email}
+                                // onChange={handleChange}
+                                // placeholder="Enter your email"
+                                // //value={email}
+                                // onChange={(e) => setEmail(e.target.value)}
+                                // className="w-full border border-gray-300 rounded-xl px-5 py-4 outline-none focus:border-[#0D47A1]"
+                                // required
                                 type="email"
                                 name="email"
                                 value={formData.email}
                                 onChange={handleChange}
                                 placeholder="Enter your email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
                                 className="w-full border border-gray-300 rounded-xl px-5 py-4 outline-none focus:border-[#0D47A1]"
                                 required
-                            />
+                                />
 
                         </div>
 
@@ -184,8 +191,17 @@ const Login = () => {
                             <label className="block mb-2 font-medium text-gray-700">
                                 Password
                             </label>
-
                             <input
+                                    type="password"
+                                    name="password"
+                                    value={formData.password}
+                                    onChange={handleChange}
+                                    placeholder="Enter your password"
+                                    className="w-full border border-gray-300 rounded-xl px-5 py-4 outline-none focus:border-[#0D47A1]"
+                                    required
+                                />
+
+                            {/* <input
                                 type="password"
                                 name="password"
                                 value={formData.password}
@@ -195,7 +211,7 @@ const Login = () => {
                                 onChange={(e) => setPassword(e.target.value)}
                                 className="w-full border border-gray-300 rounded-xl px-5 py-4 outline-none focus:border-[#0D47A1]"
                                 required
-                            />
+                            /> */}
 
                         </div>
 

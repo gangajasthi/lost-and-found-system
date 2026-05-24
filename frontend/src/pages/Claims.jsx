@@ -450,9 +450,12 @@ useEffect(() => {
                   <div className="h-36 bg-gradient-to-br from-gray-100 to-gray-200 rounded-t-2xl flex items-center justify-center overflow-hidden">
                     {item.image ? (
                       <img
-                        src={item.image}
+                        src={`http://localhost:5000/uploads/${item.image}`}
                         alt={item.title}
-                        className="w-full h-full object-cover rounded-t-2xl"
+                        className="w-full h-full object-contain bg-gray-100"
+                        // src={item.image}
+                        // alt={item.title}
+                        // className="w-full h-full object-cover rounded-t-2xl"
                       />
                     ) : (
                       <svg className="w-10 h-10 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">

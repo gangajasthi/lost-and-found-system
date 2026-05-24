@@ -6,14 +6,16 @@ const axios = require("axios");
 exports.createItem = async (req, res) => {
 
     try {
+
         console.log(req.body);
+        console.log(req.file);
 
         const newItem = await Item.create({
             ...req.body,
-            userId: req.body.userId
+            userId: req.body.userId,
+            image: req.file ? req.file.filename : ""
         });
 
-        // Find opposite type items
         const oppositeType =
             newItem.type === "lost" ? "found" : "lost";
 
@@ -25,12 +27,10 @@ exports.createItem = async (req, res) => {
 
         for (let item of items) {
 
-            // TEMPORARY AI OFF
             const similarity = 0;
 
             console.log("SIMILARITY SCORE:", similarity);
 
-            // TEMPORARY TEST CONDITION
             if (similarity > 0) {
 
                 matchedItems.push({
@@ -39,7 +39,6 @@ exports.createItem = async (req, res) => {
                 });
 
             }
-
         }
 
         res.status(201).json({
@@ -55,8 +54,61 @@ exports.createItem = async (req, res) => {
         });
 
     }
-
 };
+// exports.createItem = async (req, res) => {
+
+//     try {
+//         console.log(req.body);
+
+//         const newItem = await Item.create({
+//             ...req.body,
+//             userId: req.body.userId
+//         });
+
+//         // Find opposite type items
+//         const oppositeType =
+//             newItem.type === "lost" ? "found" : "lost";
+
+//         const items = await Item.find({
+//             type: oppositeType
+//         });
+
+//         let matchedItems = [];
+
+//         for (let item of items) {
+
+//             // TEMPORARY AI OFF
+//             const similarity = 0;
+
+//             console.log("SIMILARITY SCORE:", similarity);
+
+//             // TEMPORARY TEST CONDITION
+//             if (similarity > 0) {
+
+//                 matchedItems.push({
+//                     item,
+//                     similarity
+//                 });
+
+//             }
+
+//         }
+
+//         res.status(201).json({
+//             message: "Item Posted Successfully",
+//             newItem,
+//             matchedItems
+//         });
+
+//     } catch (error) {
+
+//         res.status(500).json({
+//             message: error.message
+//         });
+
+//     }
+
+// };
 // exports.createItem = async (req, res) => {
 
 //     try {

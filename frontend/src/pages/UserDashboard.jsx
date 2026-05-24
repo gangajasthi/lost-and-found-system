@@ -5,6 +5,14 @@ import logo from "../assets/aditya-logo.png";
 const UserDashboard = () => {
 
     const navigate = useNavigate();
+    const handleLogout = () => {
+
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+
+    navigate("/login");
+
+};
 
     return (
 
