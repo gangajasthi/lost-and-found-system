@@ -31,7 +31,6 @@ const Register = () => {
         if (formData.password !== formData.confirmPassword) {
 
             alert("Passwords do not match");
-
             return;
 
         }
@@ -85,11 +84,9 @@ const Register = () => {
                     </h1>
 
                     <p className="mt-6 text-lg text-blue-100 leading-8">
-
                         Create your university portal account
                         to report lost or found items securely
                         inside the campus.
-
                     </p>
 
                 </div>
@@ -123,8 +120,6 @@ const Register = () => {
                                 value={formData.name}
                                 onChange={handleChange}
                                 placeholder="Enter full name"
-                                value={name}
-                                onChange={(e) => setName(e.target.value)}
                                 className="w-full border border-gray-300 rounded-xl px-5 py-4 outline-none focus:border-[#0D47A1]"
                                 required
                             />
@@ -144,8 +139,6 @@ const Register = () => {
                                 value={formData.email}
                                 onChange={handleChange}
                                 placeholder="example@adityauniversity.in"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
                                 className="w-full border border-gray-300 rounded-xl px-5 py-4 outline-none focus:border-[#0D47A1]"
                                 required
                             />
@@ -165,8 +158,6 @@ const Register = () => {
                                 value={formData.mobile}
                                 onChange={handleChange}
                                 placeholder="Enter mobile number"
-                                value={mobile}
-                                onChange={(e) => setMobile(e.target.value)}
                                 className="w-full border border-gray-300 rounded-xl px-5 py-4 outline-none focus:border-[#0D47A1]"
                                 required
                             />
@@ -186,8 +177,6 @@ const Register = () => {
                                 value={formData.password}
                                 onChange={handleChange}
                                 placeholder="Create password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
                                 className="w-full border border-gray-300 rounded-xl px-5 py-4 outline-none focus:border-[#0D47A1]"
                                 required
                             />
@@ -207,8 +196,6 @@ const Register = () => {
                                 value={formData.confirmPassword}
                                 onChange={handleChange}
                                 placeholder="Confirm password"
-                                value={confirmPassword}
-                                onChange={(e) => setConfirmPassword(e.target.value)}
                                 className="w-full border border-gray-300 rounded-xl px-5 py-4 outline-none focus:border-[#0D47A1]"
                                 required
                             />

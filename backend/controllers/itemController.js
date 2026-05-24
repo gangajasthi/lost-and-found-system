@@ -1,10 +1,8 @@
 const Item = require("../models/Item");
 const axios = require("axios");
 
-
 // CREATE ITEM
 exports.createItem = async (req, res) => {
-
     try {
 
         console.log(req.body);
@@ -55,118 +53,6 @@ exports.createItem = async (req, res) => {
 
     }
 };
-// exports.createItem = async (req, res) => {
-
-//     try {
-//         console.log(req.body);
-
-//         const newItem = await Item.create({
-//             ...req.body,
-//             userId: req.body.userId
-//         });
-
-//         // Find opposite type items
-//         const oppositeType =
-//             newItem.type === "lost" ? "found" : "lost";
-
-//         const items = await Item.find({
-//             type: oppositeType
-//         });
-
-//         let matchedItems = [];
-
-//         for (let item of items) {
-
-//             // TEMPORARY AI OFF
-//             const similarity = 0;
-
-//             console.log("SIMILARITY SCORE:", similarity);
-
-//             // TEMPORARY TEST CONDITION
-//             if (similarity > 0) {
-
-//                 matchedItems.push({
-//                     item,
-//                     similarity
-//                 });
-
-//             }
-
-//         }
-
-//         res.status(201).json({
-//             message: "Item Posted Successfully",
-//             newItem,
-//             matchedItems
-//         });
-
-//     } catch (error) {
-
-//         res.status(500).json({
-//             message: error.message
-//         });
-
-//     }
-
-// };
-// exports.createItem = async (req, res) => {
-
-//     try {
-
-//         const newItem = await Item.create(req.body);
-
-//         // Find opposite type items
-//         const oppositeType =
-//             newItem.type === "lost" ? "found" : "lost";
-
-//         const items = await Item.find({
-//             type: oppositeType
-//         });
-
-//         let matchedItems = [];
-
-//         for (let item of items) {
-
-//            // const response = await axios.post(
-//             //     "http://127.0.0.1:8000/text-similarity",
-//             //     {
-//             //         text1: newItem.description,
-//             //         text2: item.description
-//             //     }
-//             // );
-
-//             //const similarity = response.data.similarity;
-
-//             console.log("SIMILARITY SCORE:", similarity);
-
-//             // TEMPORARY TEST CONDITION
-//             if (similarity > 0) {
-
-//                 matchedItems.push({
-//                     item,
-//                     similarity
-//                 });
-
-//             }
-
-//         }
-
-//         res.status(201).json({
-//             message: "Item Posted Successfully",
-//             newItem,
-//             matchedItems
-//         });
-
-//     } catch (error) {
-
-//         res.status(500).json({
-//             message: error.message
-//         });
-
-//     }
-
-// };
-
 
 // GET ALL ITEMS
 exports.getAllItems = async (req, res) => {
@@ -186,7 +72,6 @@ exports.getAllItems = async (req, res) => {
     }
 
 };
-
 
 // GET SINGLE ITEM
 exports.getSingleItem = async (req, res) => {
@@ -213,20 +98,82 @@ exports.getSingleItem = async (req, res) => {
 
 };
 
-
 // UPDATE ITEM
+// Handles:
+//   LOST  → approve directly (no extra fields needed)
+//   FOUND → save adminTitle, adminDescription, adminImage before approving
+//
+// For found items, the frontend sends multipart/form-data so that an
+// optional admin image file can be uploaded.  The route must use the
+// same multer middleware that createItem uses (single("image")).
+//
+// adminImage resolution priority (found items only):
+//   1. Admin uploaded a new file  → use req.file.filename
+//   2. useExistingImage === "true" → use the original item.image
+//   3. Otherwise                  → "" (no image shown to users)
 exports.updateItem = async (req, res) => {
 
     try {
 
-        const item = await Item.findByIdAndUpdate(
-            req.params.id,
-            req.body,
-            { new: true }
-        );
+        const existingItem =
+            await Item.findById(req.params.id);
+
+        if (!existingItem) {
+            return res.status(404).json({
+                message: "Item not found"
+            });
+        }
+
+        // ── LOST ITEM ─────────────────────────────────────────
+        if (existingItem.type === "lost") {
+
+            const item =
+                await Item.findByIdAndUpdate(
+                    req.params.id,
+                    {
+                        status: "approved",
+                        approved: true
+                    },
+                    { new: true }
+                );
+
+            return res.status(200).json({
+                message: "Lost item approved successfully",
+                item
+            });
+
+        }
+
+        // ── FOUND ITEM ────────────────────────────────────────
+        // Determine which adminImage to persist
+        let adminImage = "";
+
+        if (req.file) {
+            // Admin uploaded a new image
+            adminImage = req.file.filename;
+        } else if (req.body.useExistingImage === "true") {
+            // Admin chose to reuse the original finder's image
+            adminImage = existingItem.image || "";
+        }
+        // else: leave adminImage as "" → no image shown publicly
+
+        const item =
+            await Item.findByIdAndUpdate(
+                req.params.id,
+                {
+                    status: "approved",
+                    approved: true,
+                    adminTitle:
+                        req.body.adminTitle || "",
+                    adminDescription:
+                        req.body.adminDescription || "",
+                    adminImage
+                },
+                { new: true }
+            );
 
         res.status(200).json({
-            message: "Item Updated Successfully",
+            message: "Found item approved successfully",
             item
         });
 
@@ -239,7 +186,6 @@ exports.updateItem = async (req, res) => {
     }
 
 };
-
 
 // DELETE ITEM
 exports.deleteItem = async (req, res) => {
