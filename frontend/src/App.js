@@ -10,6 +10,7 @@ import ReportFound from "./pages/ReportFound";
 import MyReports from "./pages/MyReports";
 import Claims from "./pages/Claims";
 import AdminDashboard from "./pages/AdminDashboard";
+import ForgotPassword from "./pages/ForgotPassword";
 
 function App() {
   return (
@@ -40,6 +41,10 @@ function App() {
         <Route path="/admin-login" element={<AdminLogin />} />
 
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
+
+        {/* <Route path="/forgot-password" element={<ForgotPassword />} /> */}
+
+        <Route path="/forgot-password" element={<ForgotPassword />} />
 
       </Routes>
 

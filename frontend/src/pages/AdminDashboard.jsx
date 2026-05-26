@@ -365,6 +365,94 @@ function ReportRow({ report, onApprove, onReject, onOpenFoundModal, onView }) {
         </div>
       </div>
 
+
+{report.matchedItems?.length > 0 && (
+
+  <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 mt-4 ml-14 mr-4">
+
+    <p className="font-bold text-blue-700 mb-4 text-lg">
+      🤖 AI Suggested Match
+    </p>
+
+    <div className="grid grid-cols-2 gap-4">
+
+      {/* Current Item */}
+      <div className="bg-white rounded-xl border p-4 shadow-sm">
+
+        <p className="text-xs font-bold text-gray-500 mb-2">
+          CURRENT ITEM
+        </p>
+
+        <h3 className="font-bold text-lg">
+          {report.title}
+        </h3>
+
+        <p className="text-gray-600 text-sm mt-1">
+          {report.description}
+        </p>
+
+        <p className="text-sm text-gray-500 mt-3">
+          📍 {report.location}
+        </p>
+
+      </div>
+
+      {/* Matched Item */}
+      <div className="bg-white rounded-xl border p-4 shadow-sm">
+
+        <p className="text-xs font-bold text-gray-500 mb-2">
+          MATCHED ITEM
+        </p>
+
+        <h3 className="font-bold text-lg">
+
+          {
+            report.matchedItems[0]
+              ?.itemId?.title
+          }
+
+        </h3>
+
+        <p className="text-gray-600 text-sm mt-1">
+
+          {
+            report.matchedItems[0]
+              ?.itemId?.description
+          }
+
+        </p>
+
+        <p className="text-sm text-gray-500 mt-3">
+          📍
+          {
+            report.matchedItems[0]
+              ?.itemId?.location
+          }
+        </p>
+
+      </div>
+
+    </div>
+
+    <div className="mt-4 text-center">
+
+      <span className="bg-green-100 text-green-700 px-4 py-2 rounded-full font-semibold">
+
+        Similarity Score:{" "}
+
+        {Math.round(
+          report.matchedItems[0]
+            .similarity * 100
+        )}
+        %
+
+      </span>
+
+    </div>
+
+  </div>
+
+)}
       <div className="flex gap-2 mt-4 pl-14">
         <button
           onClick={() => (isFound ? onOpenFoundModal(report) : onApprove(report._id))}

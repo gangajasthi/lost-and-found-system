@@ -68,6 +68,19 @@ const itemSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    matchedItems: [
+  {
+    itemId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Item",
+    },
+
+    similarity: {
+      type: Number,
+      default: 0,
+    },
+  },
+],
   },
   { timestamps: true }
 );

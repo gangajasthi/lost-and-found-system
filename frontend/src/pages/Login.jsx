@@ -165,15 +165,6 @@ const Login = () => {
                             </label>
 
                             <input
-                                // type="email"
-                                // name="email"
-                                // value={formData.email}
-                                // onChange={handleChange}
-                                // placeholder="Enter your email"
-                                // //value={email}
-                                // onChange={(e) => setEmail(e.target.value)}
-                                // className="w-full border border-gray-300 rounded-xl px-5 py-4 outline-none focus:border-[#0D47A1]"
-                                // required
                                 type="email"
                                 name="email"
                                 value={formData.email}
@@ -214,6 +205,23 @@ const Login = () => {
                             /> */}
 
                         </div>
+
+                        
+                        <div className="text-right mb-4">
+
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    navigate(
+                                        "/forgot-password"
+                                    )
+                                }
+                                className="text-blue-600 text-sm hover:underline"
+                            >
+                                Forgot Password?
+                            </button>
+
+                            </div>
 
                         {/* Button */}
                         <button

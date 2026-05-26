@@ -23,21 +23,64 @@ exports.createItem = async (req, res) => {
 
         let matchedItems = [];
 
-        for (let item of items) {
+        // for (let item of items) {
 
-            const similarity = 0;
+        //     const similarity = 0;
 
-            console.log("SIMILARITY SCORE:", similarity);
+        //     console.log("SIMILARITY SCORE:", similarity);
 
-            if (similarity > 0) {
+        //     if (similarity > 0) {
 
-                matchedItems.push({
-                    item,
-                    similarity
-                });
+        //         matchedItems.push({
+        //             item,
+        //             similarity
+        //         });
 
-            }
-        }
+        //     }
+        // }
+                    for (let item of items) {
+
+                    const response =
+                        await axios.post(
+                            "http://127.0.0.1:8000/text-similarity",
+                            {
+                                text1:
+                                    newItem.description,
+
+                                text2:
+                                    item.description
+                            }
+                        );
+
+                    const similarity =
+                        response.data.similarity;
+
+                    console.log(
+                        "SIMILARITY SCORE:",
+                        similarity
+                    );
+
+                    // Threshold
+                    if (similarity >= 0.40) {
+
+                        matchedItems.push({
+                            item,
+                            similarity
+                        });
+
+                    }
+
+                }
+                newItem.matchedItems =
+                matchedItems.map(match => ({
+                    itemId:
+                        match.item._id,
+
+                    similarity:
+                        match.similarity
+                }));
+
+                await newItem.save();
 
         res.status(201).json({
             message: "Item Posted Successfully",
@@ -59,7 +102,12 @@ exports.getAllItems = async (req, res) => {
 
     try {
 
-        const items = await Item.find();
+        //const items = await Item.find();
+        const items =
+        await Item.find()
+         .populate(
+    "matchedItems.itemId"
+   );
 
         res.status(200).json(items);
 
