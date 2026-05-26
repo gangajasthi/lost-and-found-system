@@ -81,6 +81,16 @@ const itemSchema = new mongoose.Schema(
     },
   },
 ],
+resolved: {
+  type: Boolean,
+  default: false,
+},
+
+resolvedWith: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: "Item",
+  default: null,
+},
   },
   { timestamps: true }
 );
