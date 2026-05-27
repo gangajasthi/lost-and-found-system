@@ -68,6 +68,10 @@ const itemSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    notification: {
+      type: String,
+      default: ""
+},
     matchedItems: [
   {
     itemId: {

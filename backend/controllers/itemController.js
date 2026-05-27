@@ -23,6 +23,81 @@ exports.createItem = async (req, res) => {
 
         let matchedItems = [];
 
+        for (let item of items) {
+
+    try {
+
+        const response =
+            await axios.post(
+                "http://127.0.0.1:8000/text-similarity",
+                {
+                    text1:
+                        newItem.description,
+
+                    text2:
+                        item.description
+                }
+            );
+
+        const similarity =
+            response.data.similarity;
+
+        console.log(
+            "SIMILARITY SCORE:",
+            similarity
+        );
+
+        if (similarity >= 0.40) {
+
+            matchedItems.push({
+                item,
+                similarity
+            });
+
+        }
+
+    } catch (err) {
+
+        console.log(
+            "AI service error"
+        );
+
+    }
+
+}
+
+newItem.matchedItems =
+matchedItems.map(match => ({
+    itemId:
+        match.item._id,
+
+    similarity:
+        match.similarity
+}));
+
+await newItem.save();
+console.log(
+    "ITEM SAVED SUCCESSFULLY"
+);
+res.status(201).json({
+    message:
+        "Item Posted Successfully",
+
+    newItem,
+    matchedItems
+});
+
+    } catch (error) {
+
+        res.status(500).json({
+            message:
+                error.message
+        });
+
+    }
+
+};
+
         // for (let item of items) {
 
         //     const similarity = 0;
@@ -38,64 +113,107 @@ exports.createItem = async (req, res) => {
 
         //     }
         // }
-                    for (let item of items) {
+//                     for (let item of items) {
 
-                    const response =
-                        await axios.post(
-                            "http://127.0.0.1:8000/text-similarity",
-                            {
-                                text1:
-                                    newItem.description,
+//                     const response =
+//                         await axios.post(
+//                             "http://127.0.0.1:8000/text-similarity",
+//                             {
+//                                 text1:
+//                                     newItem.description,
 
-                                text2:
-                                    item.description
-                            }
-                        );
+//                                 text2:
+//                                     item.description
+//                             }
+//                         );
 
-                    const similarity =
-                        response.data.similarity;
+//                     const similarity =
+//                         response.data.similarity;
 
-                    console.log(
-                        "SIMILARITY SCORE:",
-                        similarity
-                    );
+//                     console.log(
+//                         "SIMILARITY SCORE:",
+//                         similarity
+//                     );
 
-                    // Threshold
-                    if (similarity >= 0.40) {
+//                     // Threshold
+//                     if (similarity >= 0.40) {
 
-                        matchedItems.push({
-                            item,
-                            similarity
-                        });
+//                         matchedItems.push({
+//                             item,
+//                             similarity
+//                         });
 
-                    }
+//                     }
 
-                }
-                newItem.matchedItems =
-                matchedItems.map(match => ({
-                    itemId:
-                        match.item._id,
+//                 }
+//                 newItem.matchedItems =
+//                 matchedItems.map(match => ({
+//                     itemId:
+//                         match.item._id,
 
-                    similarity:
-                        match.similarity
-                }));
+//                     similarity:
+//                         match.similarity
+//                 }));
 
-                await newItem.save();
+//                 await newItem.save();
 
-        res.status(201).json({
-            message: "Item Posted Successfully",
-            newItem,
-            matchedItems
-        });
+//         res.status(201).json({
+//             message: "Item Posted Successfully",
+//             newItem,
+//             matchedItems
+//         });
 
-    } catch (error) {
+//     } catch (error) {
 
-        res.status(500).json({
-            message: error.message
-        });
+//         res.status(500).json({
+//             message: error.message
+//         });
 
-    }
-};
+//     }
+// };
+
+// for (let item of items) {
+
+//     try {
+
+//         const response =
+//             await axios.post(
+//                 "http://127.0.0.1:8000/text-similarity",
+//                 {
+//                     text1:
+//                         newItem.description,
+
+//                     text2:
+//                         item.description
+//                 }
+//             );
+
+//         const similarity =
+//             response.data.similarity;
+
+//         console.log(
+//             "SIMILARITY SCORE:",
+//             similarity
+//         );
+
+//         if (similarity >= 0.40) {
+
+//             matchedItems.push({
+//                 item,
+//                 similarity
+//             });
+
+//         }
+
+//     } catch (err) {
+
+//         console.log(
+//             "AI service error"
+//         );
+
+//     }
+
+// }
 
 // GET ALL ITEMS
 exports.getAllItems = async (req, res) => {

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import DashboardLayout from "../components/DashboardLayout";
 import StatusBadge from "../components/StatusBadge";
 
@@ -538,6 +539,7 @@ function PendingSection({ title, badgeColor, items, emptyText, onApprove, onReje
 
 // ── Admin Dashboard (root) ───────────────────────────────────────
 export default function AdminDashboard() {
+  const navigate                                = useNavigate();
   const [reports, setReports]                   = useState([]);
   const [actionFeedback, setActionFeedback]     = useState(null);
   const [foundModalReport, setFoundModalReport] = useState(null);
@@ -567,15 +569,38 @@ export default function AdminDashboard() {
   const foundReports  = reports.filter((r) => r.type === "found").length;
   const recoveryRate  = totalReports > 0 ? Math.round((resolvedItems / totalReports) * 100) : 0;
 
+  // const handleApproveLost = async (id) => {
+  //   try {
+  //     await axios.put(`http://localhost:5000/api/items/${id}`, { status: "approved" });
+  //     fetchReports();
+  //     showFeedback("approved", id);
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // };
+
   const handleApproveLost = async (id) => {
-    try {
-      await axios.put(`http://localhost:5000/api/items/${id}`, { status: "approved" });
-      fetchReports();
-      showFeedback("approved", id);
-    } catch (error) {
-      console.log(error);
-    }
-  };
+
+  try {
+
+    await axios.put(
+      `http://localhost:5000/api/admin/approve/${id}`
+    );
+
+    fetchReports();
+
+    showFeedback(
+      "approved",
+      id
+    );
+
+  } catch (error) {
+
+    console.log(error);
+
+  }
+
+};
 
   const handleReject = async (id) => {
     try {
@@ -648,6 +673,61 @@ export default function AdminDashboard() {
           );
         })}
       </div>
+
+      {/* Approved + Rejected Cards */}
+<div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+
+  <div
+    onClick={() =>
+      navigate("/approved-items")
+    }
+    className="rounded-2xl p-5 border border-gray-100 shadow-sm bg-green-50 cursor-pointer hover:shadow-md transition"
+  >
+
+    <p className="text-2xl font-black text-gray-900">
+      {resolvedItems}
+    </p>
+
+    <p className="text-xs font-semibold text-gray-600 mt-1">
+      Approved Items
+    </p>
+
+    <p className="text-[11px] font-medium mt-1 text-green-600">
+      View approved item details
+    </p>
+
+  </div>
+
+  <div
+    onClick={() =>
+      navigate("/rejected-items")
+    }
+    className="rounded-2xl p-5 border border-gray-100 shadow-sm bg-red-50 cursor-pointer hover:shadow-md transition"
+  >
+
+    <p className="text-2xl font-black text-gray-900">
+
+      {
+        reports.filter(
+          (r) =>
+            r.status ===
+            "rejected"
+        ).length
+      }
+
+    </p>
+
+    <p className="text-xs font-semibold text-gray-600 mt-1">
+      Rejected Items
+    </p>
+
+    <p className="text-[11px] font-medium mt-1 text-red-600">
+      View rejected item details
+    </p>
+
+  </div>
+
+</div>
 
       {/* Two-column layout */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">

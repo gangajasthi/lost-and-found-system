@@ -10,7 +10,10 @@ import ReportFound from "./pages/ReportFound";
 import MyReports from "./pages/MyReports";
 import Claims from "./pages/Claims";
 import AdminDashboard from "./pages/AdminDashboard";
+import ApprovedItems from "./pages/ApprovedItems";
+import RejectedItems from "./pages/RejectedItems";
 import ForgotPassword from "./pages/ForgotPassword";
+
 
 function App() {
   return (
@@ -41,6 +44,10 @@ function App() {
         <Route path="/admin-login" element={<AdminLogin />} />
 
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
+
+        <Route path="/approved-items" element={<ApprovedItems />} />
+
+        <Route path="/rejected-items" element={<RejectedItems />} />
 
         {/* <Route path="/forgot-password" element={<ForgotPassword />} /> */}
 

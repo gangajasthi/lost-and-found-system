@@ -276,6 +276,16 @@ const fetchReports = async () => {
               key={report._id}
               className="bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow overflow-hidden"
             >
+               {/* Notification */}
+  {report.notification && (
+
+    <div className="bg-green-100 border border-green-300 text-green-700 rounded-xl px-4 py-3 m-4">
+
+      {report.notification}
+
+    </div>
+
+  )}
 
               <div
                 className="flex items-center gap-4 p-5 cursor-pointer"
