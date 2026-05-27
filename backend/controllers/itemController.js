@@ -24,36 +24,11 @@ exports.createItem = async (req, res) => {
             type: oppositeType,
             resolved: { $ne: true }
         });
-<<<<<<< HEAD
-
-=======
->>>>>>> dc971ea (Added OpenCV image comparison and AI suggestions)
         let bestMatch = null;
         let bestScore = 0;
 
         for (let item of items) {
 
-<<<<<<< HEAD
-            const response =
-                await axios.post(
-                    "http://127.0.0.1:8000/text-similarity",
-                    {
-                        text1: newItem.description,
-                        text2: item.description
-                    }
-                );
-
-            const similarity =
-                response.data.similarity;
-
-            console.log(
-                "SIMILARITY SCORE:",
-                similarity
-            );
-
-            if (
-                similarity >= 0.65 &&
-=======
             const textResponse =
     await axios.post(
         "http://127.0.0.1:8000/text-similarity",
@@ -112,7 +87,6 @@ if (newItem.image && item.image) {
 
             if (
                 similarity >= 0.30 &&
->>>>>>> dc971ea (Added OpenCV image comparison and AI suggestions)
                 similarity > bestScore
             ) {
                 bestScore = similarity;
@@ -217,156 +191,6 @@ exports.getSingleItem = async (req, res) => {
 
 // UPDATE ITEM
 exports.updateItem = async (req, res) => {
-<<<<<<< HEAD
-
-    try {
-
-        const existingItem =
-            await Item.findById(
-                req.params.id
-            );
-
-        if (!existingItem) {
-
-            return res.status(404).json({
-                message: "Item not found"
-            });
-
-        }
-
-        // LOST ITEM
-        if (existingItem.type === "lost") {
-
-            let resolvedWith = null;
-
-            if (
-                existingItem.matchedItems?.length > 0
-            ) {
-
-                const matchedId =
-                    existingItem.matchedItems[0].itemId;
-
-                const matchedItem =
-                    await Item.findById(matchedId);
-
-                if (matchedItem) {
-
-                    matchedItem.status =
-                        "approved";
-
-                    matchedItem.approved =
-                        true;
-
-                    matchedItem.resolved =
-                        true;
-
-                    matchedItem.resolvedWith =
-                        existingItem._id;
-
-                    await matchedItem.save();
-
-                    resolvedWith =
-                        matchedItem._id;
-                }
-            }
-
-            const item =
-                await Item.findByIdAndUpdate(
-                    req.params.id,
-                    {
-                        status: "approved",
-                        approved: true,
-                        resolved: true,
-                        resolvedWith
-                    },
-                    { new: true }
-                );
-
-            return res.status(200).json({
-                message:
-                    "Lost item approved successfully",
-                item
-            });
-
-        }
-
-        // FOUND ITEM
-        let adminImage = "";
-
-        if (req.file) {
-
-            adminImage =
-                req.file.filename;
-
-        } else if (
-            req.body.useExistingImage === "true"
-        ) {
-
-            adminImage =
-                existingItem.image || "";
-
-        }
-
-        let resolvedWith = null;
-
-        if (
-            existingItem.matchedItems?.length > 0
-        ) {
-
-            const matchedId =
-                existingItem.matchedItems[0].itemId;
-
-            const matchedItem =
-                await Item.findById(matchedId);
-
-            if (matchedItem) {
-
-                matchedItem.status =
-                    "approved";
-
-                matchedItem.approved =
-                    true;
-
-                matchedItem.resolved =
-                    true;
-
-                matchedItem.resolvedWith =
-                    existingItem._id;
-
-                await matchedItem.save();
-
-                resolvedWith =
-                    matchedItem._id;
-
-            }
-
-        }
-
-        const item =
-            await Item.findByIdAndUpdate(
-                req.params.id,
-                {
-                    status: "approved",
-                    approved: true,
-                    resolved: true,
-                    resolvedWith,
-
-                    adminTitle:
-                        req.body.adminTitle || "",
-
-                    adminDescription:
-                        req.body.adminDescription || "",
-
-                    adminImage
-                },
-                { new: true }
-            );
-
-        res.status(200).json({
-            message:
-                "Found item approved successfully",
-            item
-=======
 
     try {
 
@@ -539,7 +363,6 @@ exports.deleteItem = async (req, res) => {
         res.status(200).json({
             message:
                 "Item Deleted Successfully"
->>>>>>> dc971ea (Added OpenCV image comparison and AI suggestions)
         });
 
     } catch (error) {
