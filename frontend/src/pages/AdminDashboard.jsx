@@ -366,94 +366,6 @@ function ReportRow({ report, onApprove, onReject, onOpenFoundModal, onView }) {
         </div>
       </div>
 
-
-{report.matchedItems?.length > 0 && (
-
-  <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 mt-4 ml-14 mr-4">
-
-    <p className="font-bold text-blue-700 mb-4 text-lg">
-      🤖 AI Suggested Match
-    </p>
-
-    <div className="grid grid-cols-2 gap-4">
-
-      {/* Current Item */}
-      <div className="bg-white rounded-xl border p-4 shadow-sm">
-
-        <p className="text-xs font-bold text-gray-500 mb-2">
-          CURRENT ITEM
-        </p>
-
-        <h3 className="font-bold text-lg">
-          {report.title}
-        </h3>
-
-        <p className="text-gray-600 text-sm mt-1">
-          {report.description}
-        </p>
-
-        <p className="text-sm text-gray-500 mt-3">
-          📍 {report.location}
-        </p>
-
-      </div>
-
-      {/* Matched Item */}
-      <div className="bg-white rounded-xl border p-4 shadow-sm">
-
-        <p className="text-xs font-bold text-gray-500 mb-2">
-          MATCHED ITEM
-        </p>
-
-        <h3 className="font-bold text-lg">
-
-          {
-            report.matchedItems[0]
-              ?.itemId?.title
-          }
-
-        </h3>
-
-        <p className="text-gray-600 text-sm mt-1">
-
-          {
-            report.matchedItems[0]
-              ?.itemId?.description
-          }
-
-        </p>
-
-        <p className="text-sm text-gray-500 mt-3">
-          📍
-          {
-            report.matchedItems[0]
-              ?.itemId?.location
-          }
-        </p>
-
-      </div>
-
-    </div>
-
-    <div className="mt-4 text-center">
-
-      <span className="bg-green-100 text-green-700 px-4 py-2 rounded-full font-semibold">
-
-        Similarity Score:{" "}
-
-        {Math.round(
-          report.matchedItems[0]
-            .similarity * 100
-        )}
-        %
-
-      </span>
-
-    </div>
-
-  </div>
-
-)}
       <div className="flex gap-2 mt-4 pl-14">
         <button
           onClick={() => (isFound ? onOpenFoundModal(report) : onApprove(report._id))}
@@ -558,9 +470,23 @@ export default function AdminDashboard() {
     }
   };
 
-  const pendingReports = reports.filter((r) => r.status !== "approved");
-  const pendingLost    = pendingReports.filter((r) => r.type === "lost");
-  const pendingFound   = pendingReports.filter((r) => r.type === "found");
+  const pendingReports =
+  reports.filter((r) => r.status !== "approved");
+
+const aiSuggestions =
+  pendingReports.filter((r) =>
+    r.matchedItems?.length > 0
+  );
+  
+const pendingLost =
+  pendingReports.filter(
+    (r) => r.type === "lost"
+  );
+
+const pendingFound =
+  pendingReports.filter(
+    (r) => r.type === "found"
+  );
 
   const totalReports  = reports.length;
   const resolvedItems = reports.filter((r) => r.status === "approved").length;
@@ -733,6 +659,122 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         {/* Left: Pending sections (2/3 width) */}
         <div className="xl:col-span-2 space-y-6">
+          <div className="rounded-3xl border border-gray-200 bg-white overflow-hidden shadow-sm">
+            <div className="px-7 py-5 border-b border-gray-100 flex items-center gap-3">
+              <h2 className="text-lg font-bold text-gray-900">
+                🤖 AI Suggested Matches
+              </h2>
+
+              <span className="px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-700">
+                {aiSuggestions.length}
+              </span>
+            </div>
+
+            <div className="divide-y divide-gray-100">
+              {aiSuggestions.length === 0 ? (
+                <div className="p-16 text-center text-gray-400">
+                  No AI suggestions available
+                </div>
+              ) : (
+                aiSuggestions.map((report) => (
+  <div key={report._id} className="p-5">
+    <div className="rounded-3xl border border-blue-200 bg-blue-50 p-5">
+
+      <h3 className="text-xl font-bold text-blue-700 mb-5">
+        🤖 AI Suggested Match
+      </h3>
+
+      <div className="grid md:grid-cols-2 gap-4">
+
+        {/* Current Item */}
+        <div className="bg-white rounded-2xl p-5 border border-gray-200">
+          <p className="text-xs font-bold text-gray-500 mb-3">
+            CURRENT ITEM
+          </p>
+
+          <h3 className="text-2xl font-bold text-gray-900">
+            {report.title}
+          </h3>
+
+          <p className="text-gray-600 mt-2">
+            {report.description}
+          </p>
+
+          <p className="text-sm text-gray-500 mt-4">
+            📍 {report.location}
+          </p>
+          </div>
+
+          {/* Matched Item */}
+          <div className="bg-white rounded-2xl p-5 border border-gray-200">
+            <p className="text-xs font-bold text-gray-500 mb-3">
+              MATCHED ITEM
+            </p>
+
+            <h3 className="text-2xl font-bold text-gray-900">
+              {report.matchedItems?.[0]?.itemId?.title ||
+                "Matched Item"}
+            </h3>
+
+            <p className="text-gray-600 mt-2">
+              {report.matchedItems?.[0]?.itemId
+                ?.description || ""}
+            </p>
+
+            <p className="text-sm text-gray-500 mt-4">
+              📍 {report.matchedItems?.[0]?.itemId
+                ?.location || ""}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex justify-center mt-5">
+          <span className="bg-green-100 text-green-700 px-5 py-2 rounded-full font-bold">
+            Similarity Score:{" "}
+            {Math.round(
+              (report.matchedItems?.[0]
+                ?.similarity || 0) * 100
+            )}
+            %
+          </span>
+        </div>
+
+        <div className="flex gap-3 mt-5">
+          <button
+            onClick={() =>
+              report.type === "found"
+                ? setFoundModalReport(report)
+                : handleApproveLost(report._id)
+            }
+            className="px-5 py-3 rounded-xl bg-emerald-500 text-white font-bold hover:bg-emerald-600"
+          >
+            Approve Match
+          </button>
+
+          <button
+            onClick={() =>
+              handleReject(report._id)
+            }
+            className="px-5 py-3 rounded-xl border border-red-200 bg-red-50 text-red-600 font-bold"
+          >
+            Reject
+          </button>
+
+          <button
+            onClick={() =>
+              setSelectedReport(report)
+            }
+            className="px-5 py-3 rounded-xl border border-gray-200 bg-gray-50 text-gray-700 font-semibold"
+          >
+            View
+          </button>
+        </div>
+      </div>
+    </div>
+  ))
+              )}
+            </div>
+          </div>
 
           {/*
             KEY FIX: `setSelectedReport` lives here in AdminDashboard.

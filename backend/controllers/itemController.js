@@ -21,22 +21,18 @@ exports.createItem = async (req, res) => {
             type: oppositeType
         });
 
-        let matchedItems = [];
+       let bestMatch = null;
+        let bestScore = 0;
 
         for (let item of items) {
 
-    try {
-
         const response =
             await axios.post(
-                "http://127.0.0.1:8000/text-similarity",
-                {
-                    text1:
-                        newItem.description,
-
-                    text2:
-                        item.description
-                }
+            "http://127.0.0.1:8000/text-similarity",
+            {
+                text1: newItem.description,
+                text2: item.description
+            }
             );
 
         const similarity =
@@ -47,173 +43,39 @@ exports.createItem = async (req, res) => {
             similarity
         );
 
-        if (similarity >= 0.40) {
-
-            matchedItems.push({
-                item,
-                similarity
-            });
-
+        if (
+            similarity >= 0.65 &&
+            similarity > bestScore
+        ) {
+            bestScore = similarity;
+            bestMatch = item;
+        }
         }
 
-    } catch (err) {
+        let matchedItems = [];
 
-        console.log(
-            "AI service error"
-        );
+        if (bestMatch) {
 
-    }
+    matchedItems.push({
+        item:
+            bestMatch,
+
+        similarity:
+            bestScore
+    });
 
 }
 
-newItem.matchedItems =
-matchedItems.map(match => ({
-    itemId:
-        match.item._id,
 
-    similarity:
-        match.similarity
-}));
+        const validMatches = matchedItems.filter(
+            (match) => match.item && match.item._id
+        );
 
-await newItem.save();
-console.log(
-    "ITEM SAVED SUCCESSFULLY"
-);
-res.status(201).json({
-    message:
-        "Item Posted Successfully",
+        newItem.matchedItems = validMatches.map((match) => ({
+            itemId: match.item._id,
+            similarity: match.similarity,
+        }));
 
-    newItem,
-    matchedItems
-});
-
-    } catch (error) {
-
-        res.status(500).json({
-            message:
-                error.message
-        });
-
-    }
-
-};
-
-        // for (let item of items) {
-
-        //     const similarity = 0;
-
-        //     console.log("SIMILARITY SCORE:", similarity);
-
-        //     if (similarity > 0) {
-
-        //         matchedItems.push({
-        //             item,
-        //             similarity
-        //         });
-
-        //     }
-        // }
-//                     for (let item of items) {
-
-//                     const response =
-//                         await axios.post(
-//                             "http://127.0.0.1:8000/text-similarity",
-//                             {
-//                                 text1:
-//                                     newItem.description,
-
-//                                 text2:
-//                                     item.description
-//                             }
-//                         );
-
-//                     const similarity =
-//                         response.data.similarity;
-
-//                     console.log(
-//                         "SIMILARITY SCORE:",
-//                         similarity
-//                     );
-
-//                     // Threshold
-//                     if (similarity >= 0.40) {
-
-//                         matchedItems.push({
-//                             item,
-//                             similarity
-//                         });
-
-//                     }
-
-//                 }
-//                 newItem.matchedItems =
-//                 matchedItems.map(match => ({
-//                     itemId:
-//                         match.item._id,
-
-//                     similarity:
-//                         match.similarity
-//                 }));
-
-//                 await newItem.save();
-
-//         res.status(201).json({
-//             message: "Item Posted Successfully",
-//             newItem,
-//             matchedItems
-//         });
-
-//     } catch (error) {
-
-//         res.status(500).json({
-//             message: error.message
-//         });
-
-//     }
-// };
-
-// for (let item of items) {
-
-//     try {
-
-//         const response =
-//             await axios.post(
-//                 "http://127.0.0.1:8000/text-similarity",
-//                 {
-//                     text1:
-//                         newItem.description,
-
-//                     text2:
-//                         item.description
-//                 }
-//             );
-
-//         const similarity =
-//             response.data.similarity;
-
-//         console.log(
-//             "SIMILARITY SCORE:",
-//             similarity
-//         );
-
-//         if (similarity >= 0.40) {
-
-//             matchedItems.push({
-//                 item,
-//                 similarity
-//             });
-
-//         }
-
-//     } catch (err) {
-
-//         console.log(
-//             "AI service error"
-//         );
-
-//     }
-
-// }
 
 // GET ALL ITEMS
 exports.getAllItems = async (req, res) => {
@@ -278,79 +140,142 @@ exports.getSingleItem = async (req, res) => {
 //   2. useExistingImage === "true" → use the original item.image
 //   3. Otherwise                  → "" (no image shown to users)
 exports.updateItem = async (req, res) => {
+  try {
 
-    try {
+    const existingItem =
+      await Item.findById(req.params.id);
 
-        const existingItem =
-            await Item.findById(req.params.id);
-
-        if (!existingItem) {
-            return res.status(404).json({
-                message: "Item not found"
-            });
-        }
-
-        // ── LOST ITEM ─────────────────────────────────────────
-        if (existingItem.type === "lost") {
-
-            const item =
-                await Item.findByIdAndUpdate(
-                    req.params.id,
-                    {
-                        status: "approved",
-                        approved: true
-                    },
-                    { new: true }
-                );
-
-            return res.status(200).json({
-                message: "Lost item approved successfully",
-                item
-            });
-
-        }
-
-        // ── FOUND ITEM ────────────────────────────────────────
-        // Determine which adminImage to persist
-        let adminImage = "";
-
-        if (req.file) {
-            // Admin uploaded a new image
-            adminImage = req.file.filename;
-        } else if (req.body.useExistingImage === "true") {
-            // Admin chose to reuse the original finder's image
-            adminImage = existingItem.image || "";
-        }
-        // else: leave adminImage as "" → no image shown publicly
-
-        const item =
-            await Item.findByIdAndUpdate(
-                req.params.id,
-                {
-                    status: "approved",
-                    approved: true,
-                    adminTitle:
-                        req.body.adminTitle || "",
-                    adminDescription:
-                        req.body.adminDescription || "",
-                    adminImage
-                },
-                { new: true }
-            );
-
-        res.status(200).json({
-            message: "Found item approved successfully",
-            item
-        });
-
-    } catch (error) {
-
-        res.status(500).json({
-            message: error.message
-        });
-
+    if (!existingItem) {
+      return res.status(404).json({
+        message: "Item not found"
+      });
     }
 
+    // ── LOST ITEM ─────────────────────────
+    if (existingItem.type === "lost") {
+
+      let resolvedWith = null;
+
+      // approve matched item too
+      if (existingItem.matchedItems?.length > 0) {
+
+        const matchedId =
+          existingItem.matchedItems[0].itemId;
+
+        const matchedItem =
+          await Item.findById(matchedId);
+
+        if (matchedItem) {
+
+          matchedItem.status = "approved";
+          matchedItem.approved = true;
+          matchedItem.resolved = true;
+          matchedItem.resolvedWith =
+            existingItem._id;
+
+          await matchedItem.save();
+
+          resolvedWith =
+            matchedItem._id;
+        }
+      }
+
+      const item =
+        await Item.findByIdAndUpdate(
+          req.params.id,
+          {
+            status: "approved",
+            approved: true,
+            resolved: true,
+            resolvedWith
+          },
+          { new: true }
+        );
+
+      return res.status(200).json({
+        message:
+          "Lost item approved successfully",
+        item
+      });
+    }
+
+    // ── FOUND ITEM ────────────────────────
+    let adminImage = "";
+
+    if (req.file) {
+      adminImage = req.file.filename;
+    } else if (
+      req.body.useExistingImage === "true"
+    ) {
+      adminImage =
+        existingItem.image || "";
+    }
+
+    let resolvedWith = null;
+
+    // approve matched lost item too
+    if (existingItem.matchedItems?.length > 0) {
+
+      const matchedId =
+        existingItem.matchedItems[0].itemId;
+
+      const matchedItem =
+        await Item.findById(matchedId);
+
+      if (matchedItem) {
+
+        matchedItem.status =
+          "approved";
+
+        matchedItem.approved =
+          true;
+
+        matchedItem.resolved =
+          true;
+
+        matchedItem.resolvedWith =
+          existingItem._id;
+
+        await matchedItem.save();
+
+        resolvedWith =
+          matchedItem._id;
+      }
+    }
+
+    const item =
+      await Item.findByIdAndUpdate(
+        req.params.id,
+        {
+          status: "approved",
+          approved: true,
+          resolved: true,
+          resolvedWith,
+
+          adminTitle:
+            req.body.adminTitle || "",
+
+          adminDescription:
+            req.body.adminDescription || "",
+
+          adminImage
+        },
+        { new: true }
+      );
+
+    res.status(200).json({
+      message:
+        "Found item approved successfully",
+      item
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+      message: error.message
+    });
+
+  }
 };
 
 // DELETE ITEM
