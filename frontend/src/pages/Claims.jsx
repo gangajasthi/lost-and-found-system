@@ -138,7 +138,13 @@ export default function Claims() {
         setItemsError("");
         const res = await axios.get(`${API}/items`);
         // Show all approved items — lost AND found
-        const filtered = res.data.filter((item) => item.status === "approved");
+        // const filtered = res.data.filter((item) => item.status === "approved");
+        const filtered =
+  res.data.filter(
+    (item) =>
+      item.status === "approved" &&
+      !item.resolved
+  );
         setBrowseItems(filtered);
       } catch (err) {
         setItemsError("Failed to load items. Please try again.");
