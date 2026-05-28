@@ -107,6 +107,7 @@ export default function Claims() {
 
   // My Claims tab state
   const [myClaims, setMyClaims]         = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const [claimsLoading, setClaimsLoading] = useState(true);
   const [claimsError, setClaimsError]   = useState("");
 
@@ -221,103 +222,213 @@ export default function Claims() {
 
       {/* ── Browse Tab ── */}
       {activeTab === "browse" && (
+  <div>
+
+    <div className="mb-5">
+      <input
+        type="text"
+        placeholder="Search items..."
+        value={searchTerm}
+        onChange={(e) =>
+          setSearchTerm(e.target.value)
+        }
+        className="w-full md:w-96 px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+      />
+    </div>
+
+    {/* Info banner */}
+    <div className="flex items-start gap-3 p-4 rounded-xl bg-blue-50 border border-blue-200 mb-5">
+      <svg
+        className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+        />
+      </svg>
+
+      <p className="text-xs text-blue-700">
+        <strong>Lost items:</strong> if you found one, let us know. &nbsp;
+        <strong>Found items:</strong> if something belongs to you, click
+        "Claim This Item" and provide proof. Admin will verify offline.
+      </p>
+    </div>
+
+    {/* Loading */}
+    {itemsLoading && (
+      <div className="text-center py-20">
+        <p className="text-gray-400 font-medium">
+          Loading items…
+        </p>
+      </div>
+    )}
+
+    {/* Error */}
+    {!itemsLoading && itemsError && (
+      <div className="text-center py-20">
+        <p className="text-red-400 font-medium">
+          {itemsError}
+        </p>
+      </div>
+    )}
+
+    {/* Empty */}
+    {!itemsLoading &&
+      !itemsError &&
+      browseItems.length === 0 && (
+        <div className="text-center py-20">
+          <p className="text-gray-400 font-medium">
+            No approved items available yet
+          </p>
+        </div>
+    )}
+
+    {/* Items Grid */}
+    {!itemsLoading &&
+      !itemsError &&
+      browseItems.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          {browseItems
+            .filter(
+              (item) =>
+                item.userId !== user?._id
+            )
+            .filter((item) =>
+              (
+                item.title ||
+                item.adminTitle ||
+                ""
+              )
+                .toLowerCase()
+                .includes(
+                  searchTerm.toLowerCase()
+                )
+            )
+            .map((item) => (
+              <ItemCard
+                key={item._id}
+                item={item}
+                onAction={setActionModal}
+              />
+          ))}
+        </div>
+    )}
+  </div>
+)}
+
+      {activeTab === "my-claims" && (
         <div>
-          {/* Info banner */}
-          <div className="flex items-start gap-3 p-4 rounded-xl bg-blue-50 border border-blue-200 mb-5">
-            <svg className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <p className="text-xs text-blue-700">
-              <strong>Lost items:</strong> if you found one, let us know. &nbsp;
-              <strong>Found items:</strong> if something belongs to you, click "Claim This Item" and provide proof. Admin will verify offline.
-            </p>
+
+          <div className="mb-5">
+            <input
+              type="text"
+              placeholder="Search claims..."
+              value={searchTerm}
+              onChange={(e) =>
+                setSearchTerm(e.target.value)
+              }
+              className="w-full md:w-96 px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
           </div>
 
-          {/* Loading */}
-          {itemsLoading && (
-            <div className="text-center py-20">
-              <p className="text-gray-400 font-medium">Loading items…</p>
-            </div>
-          )}
+          <div className="space-y-4">
+            {claimsLoading && (
+              <div className="text-center py-20">
+                <p className="text-gray-400 font-medium">
+                  Loading your claims…
+                </p>
+              </div>
+            )}
 
-          {/* Error */}
-          {!itemsLoading && itemsError && (
-            <div className="text-center py-20">
-              <p className="text-red-400 font-medium">{itemsError}</p>
-            </div>
-          )}
+            {!claimsLoading && claimsError && (
+              <div className="text-center py-20">
+                <p className="text-red-400 font-medium">
+                  {claimsError}
+                </p>
+              </div>
+            )}
 
-          {/* Empty */}
-          {!itemsLoading && !itemsError && browseItems.length === 0 && (
-            <div className="text-center py-20">
-              <p className="text-gray-400 font-medium">No approved items available yet</p>
-            </div>
-          )}
-
-          {/* Items Grid */}
-          {!itemsLoading && !itemsError && browseItems.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-              {browseItems
-                  .filter(
-                    (item) => item.userId !== user?._id
-                  )
-                  .map((item) => (
-                    <ItemCard
-                      key={item._id}
-                      item={item}
-                      onAction={setActionModal}
-                    />
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* ── My Claims Tab ── */}
-      {activeTab === "my-claims" && (
-        <div className="space-y-4">
-          {claimsLoading && (
-            <div className="text-center py-20">
-              <p className="text-gray-400 font-medium">Loading your claims…</p>
-            </div>
-          )}
-          {!claimsLoading && claimsError && (
-            <div className="text-center py-20">
-              <p className="text-red-400 font-medium">{claimsError}</p>
-            </div>
-          )}
-          {!claimsLoading && !claimsError && myClaims.length === 0 && (
-            <div className="text-center py-20">
-              <p className="text-gray-400 font-medium">No claims submitted yet</p>
-            </div>
-          )}
-          {!claimsLoading && !claimsError && myClaims.map((claim) => (
-            <div key={claim._id} className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <h3 className="text-sm font-bold text-gray-900">
-                    {claim.itemId?.title || "Item"}
-                  </h3>
-                  <p className="text-xs text-gray-400 mt-0.5">
-                    Claimed on {new Date(claim.createdAt).toLocaleDateString()}
+            {!claimsLoading &&
+              !claimsError &&
+              myClaims.length === 0 && (
+                <div className="text-center py-20">
+                  <p className="text-gray-400 font-medium">
+                    No claims submitted yet
                   </p>
                 </div>
-                <StatusBadge status={claim.status} />
-              </div>
-              {claim.adminNote && (
-                <div className="mt-4 flex items-start gap-2 p-3 rounded-xl bg-blue-50 border border-blue-100">
-                  <svg className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                      d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-                  </svg>
-                  <div>
-                    <p className="text-xs font-semibold text-blue-800 mb-0.5">Admin Note</p>
-                    <p className="text-xs text-blue-700">{claim.adminNote}</p>
+            )}
+
+            {!claimsLoading &&
+              !claimsError &&
+              myClaims
+                .filter((claim) =>
+                  (
+                    claim.itemId?.title || ""
+                  )
+                    .toLowerCase()
+                    .includes(
+                      searchTerm.toLowerCase()
+                    )
+                )
+                .map((claim) => (
+                  <div
+                    key={claim._id}
+                    className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5"
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <h3 className="text-sm font-bold text-gray-900">
+                          {claim.itemId?.title || "Item"}
+                        </h3>
+
+                        <p className="text-xs text-gray-400 mt-0.5">
+                          Claimed on{" "}
+                          {new Date(
+                            claim.createdAt
+                          ).toLocaleDateString()}
+                        </p>
+                      </div>
+
+                      <StatusBadge
+                        status={claim.status}
+                      />
+                    </div>
+
+                    {claim.adminNote && (
+                      <div className="mt-4 flex items-start gap-2 p-3 rounded-xl bg-blue-50 border border-blue-100">
+                        <svg
+                          className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
+                          />
+                        </svg>
+
+                        <div>
+                          <p className="text-xs font-semibold text-blue-800 mb-0.5">
+                            Admin Note
+                          </p>
+
+                          <p className="text-xs text-blue-700">
+                            {claim.adminNote}
+                          </p>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                </div>
-              )}
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       )}
 

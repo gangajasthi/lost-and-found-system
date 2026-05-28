@@ -456,6 +456,7 @@ export default function AdminDashboard() {
   const [actionFeedback, setActionFeedback]     = useState(null);
   const [foundModalReport, setFoundModalReport] = useState(null);
   const [selectedReport, setSelectedReport]     = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     fetchReports();
@@ -474,18 +475,40 @@ export default function AdminDashboard() {
   reports.filter((r) => r.status !== "approved");
 
 const aiSuggestions =
-  pendingReports.filter((r) =>
-    r.matchedItems?.length > 0
+  pendingReports.filter(
+    (r) =>
+      r.matchedItems?.length > 0 &&
+      JSON.stringify(r)
+        .toLowerCase()
+        .includes(
+          searchTerm.toLowerCase()
+        )
   );
   
 const pendingLost =
+  pendingReports.filter(
+    (r) =>
+      r.type === "lost" &&
+      JSON.stringify(r)
+        .toLowerCase()
+        .includes(
+          searchTerm.toLowerCase()
+        )
+  );
+  
   pendingReports.filter(
     (r) => r.type === "lost"
   );
 
 const pendingFound =
   pendingReports.filter(
-    (r) => r.type === "found"
+    (r) =>
+      r.type === "found" &&
+      JSON.stringify(r)
+        .toLowerCase()
+        .includes(
+          searchTerm.toLowerCase()
+        )
   );
 
   const totalReports  = reports.length;
@@ -574,7 +597,18 @@ const pendingFound =
       )}
 
       {/* Analytics Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="mb-6">
+      <input
+        type="text"
+        placeholder="Search reports..."
+        value={searchTerm}
+        onChange={(e) =>
+          setSearchTerm(e.target.value)
+        }
+        className="w-full md:w-96 px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+      />
+    </div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {ANALYTICS.map((stat) => {
           const c = COLOR_MAP[stat.color];
           const value =
