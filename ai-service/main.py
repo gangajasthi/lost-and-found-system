@@ -1,6 +1,8 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 from sentence_transformers import SentenceTransformer, util
+import cv2
+import numpy as np
 
 app = FastAPI()
 
@@ -17,13 +19,19 @@ def home():
     }
 
 
-# Request body
+# Request body for text similarity
 class TextRequest(BaseModel):
     text1: str
     text2: str
 
 
-# Similarity API
+# Request body for image similarity
+class ImageRequest(BaseModel):
+    image1: str
+    image2: str
+
+
+# Text Similarity API (NLP)
 @app.post("/text-similarity")
 def text_similarity(data: TextRequest):
 
@@ -47,4 +55,65 @@ def text_similarity(data: TextRequest):
     return {
         "similarity":
         round(score, 2)
+    }
+
+
+# Image Similarity API (OpenCV)
+@app.post("/image-similarity")
+def image_similarity(data: ImageRequest):
+
+    img1 = cv2.imread(data.image1)
+    img2 = cv2.imread(data.image2)
+
+    if img1 is None or img2 is None:
+        return {
+            "similarity": 0,
+            "message": "Image not found"
+        }
+
+    img1 = cv2.resize(img1, (300, 300))
+    img2 = cv2.resize(img2, (300, 300))
+
+    gray1 = cv2.cvtColor(
+        img1,
+        cv2.COLOR_BGR2GRAY
+    )
+
+    gray2 = cv2.cvtColor(
+        img2,
+        cv2.COLOR_BGR2GRAY
+    )
+
+    orb = cv2.ORB_create()
+
+    kp1, des1 = orb.detectAndCompute(
+        gray1,
+        None
+    )
+
+    kp2, des2 = orb.detectAndCompute(
+        gray2,
+        None
+    )
+
+    if des1 is None or des2 is None:
+        return {
+            "similarity": 0
+        }
+
+    bf = cv2.BFMatcher(
+        cv2.NORM_HAMMING,
+        crossCheck=True
+    )
+
+    matches = bf.match(
+        des1,
+        des2
+    )
+
+    similarity_score = len(matches)
+
+    return {
+        "similarity":
+        similarity_score
     }

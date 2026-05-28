@@ -98,18 +98,16 @@ exports.createItem = async (req, res) => {
 
         const items =
             await Item.find({
-                type: oppositeType
+                type: oppositeType,
+                resolved: { $ne: true }
             });
 
-        let bestMatch =
-            null;
-
-        let bestScore =
-            0;
+        let bestMatch = null;
+        let bestScore = 0;
 
         for (let item of items) {
 
-            const response =
+            const textResponse =
                 await axios.post(
                     "http://127.0.0.1:8000/text-similarity",
                     {
@@ -121,16 +119,53 @@ exports.createItem = async (req, res) => {
                     }
                 );
 
-            const similarity =
-                response.data.similarity;
+            const textSimilarity =
+                textResponse.data.similarity;
+
+            let imageSimilarity = 0;
+
+            if (
+                newItem.image &&
+                item.image
+            ) {
+
+                const imageResponse =
+                    await axios.post(
+                        "http://127.0.0.1:8000/image-similarity",
+                        {
+                            image1:
+                                `../backend/uploads/${newItem.image}`,
+
+                            image2:
+                                `../backend/uploads/${item.image}`
+                        }
+                    );
+
+                imageSimilarity =
+                    imageResponse.data.similarity;
+            }
+
+            let similarity = 0;
+
+            if (
+                textSimilarity >= 0.50 &&
+                imageSimilarity >= 30
+            ) {
+
+                similarity =
+                    (
+                        textSimilarity +
+                        (imageSimilarity / 100)
+                    ) / 2;
+            }
 
             console.log(
-                "SIMILARITY SCORE:",
+                "FINAL SCORE:",
                 similarity
             );
 
             if (
-                similarity >= 0.65 &&
+                similarity >= 0.30 &&
                 similarity > bestScore
             ) {
 
@@ -170,7 +205,7 @@ exports.createItem = async (req, res) => {
                         match.item._id,
 
                     similarity:
-                        match.similarity,
+                        match.similarity
                 })
             );
 
@@ -204,12 +239,11 @@ exports.getAllItems = async (req, res) => {
 
     try {
 
-        //const items = await Item.find();
         const items =
-        await Item.find()
-         .populate(
-    "matchedItems.itemId"
-   );
+            await Item.find()
+                .populate(
+                    "matchedItems.itemId"
+                );
 
         res.status(200).json(items);
 
@@ -228,12 +262,17 @@ exports.getSingleItem = async (req, res) => {
 
     try {
 
-        const item = await Item.findById(req.params.id);
+        const item =
+            await Item.findById(
+                req.params.id
+            );
 
         if (!item) {
+
             return res.status(404).json({
                 message: "Item not found"
             });
+
         }
 
         res.status(200).json(item);
@@ -249,155 +288,165 @@ exports.getSingleItem = async (req, res) => {
 };
 
 // UPDATE ITEM
-// Handles:
-//   LOST  → approve directly (no extra fields needed)
-//   FOUND → save adminTitle, adminDescription, adminImage before approving
-//
-// For found items, the frontend sends multipart/form-data so that an
-// optional admin image file can be uploaded.  The route must use the
-// same multer middleware that createItem uses (single("image")).
-//
-// adminImage resolution priority (found items only):
-//   1. Admin uploaded a new file  → use req.file.filename
-//   2. useExistingImage === "true" → use the original item.image
-//   3. Otherwise                  → "" (no image shown to users)
 exports.updateItem = async (req, res) => {
-  try {
 
-    const existingItem =
-      await Item.findById(req.params.id);
+    try {
 
-    if (!existingItem) {
-      return res.status(404).json({
-        message: "Item not found"
-      });
-    }
+        const existingItem =
+            await Item.findById(
+                req.params.id
+            );
 
-    // ── LOST ITEM ─────────────────────────
-    if (existingItem.type === "lost") {
+        if (!existingItem) {
 
-      let resolvedWith = null;
+            return res.status(404).json({
+                message: "Item not found"
+            });
 
-      // approve matched item too
-      if (existingItem.matchedItems?.length > 0) {
-
-        const matchedId =
-          existingItem.matchedItems[0].itemId;
-
-        const matchedItem =
-          await Item.findById(matchedId);
-
-        if (matchedItem) {
-
-          matchedItem.status = "approved";
-          matchedItem.approved = true;
-          matchedItem.resolved = true;
-          matchedItem.resolvedWith =
-            existingItem._id;
-
-          await matchedItem.save();
-
-          resolvedWith =
-            matchedItem._id;
         }
-      }
 
-      const item =
-        await Item.findByIdAndUpdate(
-          req.params.id,
-          {
-            status: "approved",
-            approved: true,
-            resolved: true,
-            resolvedWith
-          },
-          { new: true }
-        );
+        // LOST ITEM
+        if (existingItem.type === "lost") {
 
-      return res.status(200).json({
-        message:
-          "Lost item approved successfully",
-        item
-      });
+            let resolvedWith = null;
+
+            if (
+                existingItem.matchedItems?.length > 0
+            ) {
+
+                const matchedId =
+                    existingItem.matchedItems[0].itemId;
+
+                const matchedItem =
+                    await Item.findById(matchedId);
+
+                if (matchedItem) {
+
+                    matchedItem.status =
+                        "approved";
+
+                    matchedItem.approved =
+                        true;
+
+                    matchedItem.resolved =
+                        true;
+
+                    matchedItem.resolvedWith =
+                        existingItem._id;
+
+                    await matchedItem.save();
+
+                    resolvedWith =
+                        matchedItem._id;
+                }
+            }
+
+            const item =
+                await Item.findByIdAndUpdate(
+                    req.params.id,
+                    {
+                        status: "approved",
+                        approved: true,
+                        resolved: true,
+                        resolvedWith
+                    },
+                    { new: true }
+                );
+
+            return res.status(200).json({
+                message:
+                    "Lost item approved successfully",
+                item
+            });
+
+        }
+
+        // FOUND ITEM
+        let adminImage = "";
+
+        if (req.file) {
+
+            adminImage =
+                req.file.filename;
+
+        } else if (
+            req.body.useExistingImage === "true"
+        ) {
+
+            adminImage =
+                existingItem.image || "";
+
+        }
+
+        let resolvedWith = null;
+
+        if (
+            existingItem.matchedItems?.length > 0
+        ) {
+
+            const matchedId =
+                existingItem.matchedItems[0].itemId;
+
+            const matchedItem =
+                await Item.findById(matchedId);
+
+            if (matchedItem) {
+
+                matchedItem.status =
+                    "approved";
+
+                matchedItem.approved =
+                    true;
+
+                matchedItem.resolved =
+                    true;
+
+                matchedItem.resolvedWith =
+                    existingItem._id;
+
+                await matchedItem.save();
+
+                resolvedWith =
+                    matchedItem._id;
+
+            }
+
+        }
+
+        const item =
+            await Item.findByIdAndUpdate(
+                req.params.id,
+                {
+                    status: "approved",
+                    approved: true,
+                    resolved: true,
+                    resolvedWith,
+
+                    adminTitle:
+                        req.body.adminTitle || "",
+
+                    adminDescription:
+                        req.body.adminDescription || "",
+
+                    adminImage
+                },
+                { new: true }
+            );
+
+        res.status(200).json({
+            message:
+                "Found item approved successfully",
+            item
+        });
+
+    } catch (error) {
+
+        res.status(500).json({
+            message: error.message
+        });
+
     }
 
-    // ── FOUND ITEM ────────────────────────
-    let adminImage = "";
-
-    if (req.file) {
-      adminImage = req.file.filename;
-    } else if (
-      req.body.useExistingImage === "true"
-    ) {
-      adminImage =
-        existingItem.image || "";
-    }
-
-    let resolvedWith = null;
-
-    // approve matched lost item too
-    if (existingItem.matchedItems?.length > 0) {
-
-      const matchedId =
-        existingItem.matchedItems[0].itemId;
-
-      const matchedItem =
-        await Item.findById(matchedId);
-
-      if (matchedItem) {
-
-        matchedItem.status =
-          "approved";
-
-        matchedItem.approved =
-          true;
-
-        matchedItem.resolved =
-          true;
-
-        matchedItem.resolvedWith =
-          existingItem._id;
-
-        await matchedItem.save();
-
-        resolvedWith =
-          matchedItem._id;
-      }
-    }
-
-    const item =
-      await Item.findByIdAndUpdate(
-        req.params.id,
-        {
-          status: "approved",
-          approved: true,
-          resolved: true,
-          resolvedWith,
-
-          adminTitle:
-            req.body.adminTitle || "",
-
-          adminDescription:
-            req.body.adminDescription || "",
-
-          adminImage
-        },
-        { new: true }
-      );
-
-    res.status(200).json({
-      message:
-        "Found item approved successfully",
-      item
-    });
-
-  } catch (error) {
-
-    res.status(500).json({
-      message: error.message
-    });
-
-  }
 };
 
 // DELETE ITEM
@@ -405,10 +454,37 @@ exports.deleteItem = async (req, res) => {
 
     try {
 
-        await Item.findByIdAndDelete(req.params.id);
+        await Item.findByIdAndDelete(
+            req.params.id
+        );
 
         res.status(200).json({
-            message: "Item Deleted Successfully"
+            message:
+                "Item Deleted Successfully"
+        });
+
+    } catch (error) {
+
+        res.status(500).json({
+            message: error.message
+        });
+
+    }
+
+};
+
+// DELETE ITEM
+exports.deleteItem = async (req, res) => {
+
+    try {
+
+        await Item.findByIdAndDelete(
+            req.params.id
+        );
+
+        res.status(200).json({
+            message:
+                "Item Deleted Successfully"
         });
 
     } catch (error) {
