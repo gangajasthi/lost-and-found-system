@@ -2,7 +2,82 @@ const Item = require("../models/Item");
 const axios = require("axios");
 
 // CREATE ITEM
+// exports.createItem = async (req, res) => {
+//     try {
+
+//         console.log(req.body);
+//         console.log(req.file);
+
+//         const newItem = await Item.create({
+//             ...req.body,
+//             userId: req.body.userId,
+//             image: req.file ? req.file.filename : ""
+//         });
+
+//         const oppositeType =
+//             newItem.type === "lost" ? "found" : "lost";
+
+//         const items = await Item.find({
+//             type: oppositeType
+//         });
+
+//        let bestMatch = null;
+//         let bestScore = 0;
+
+//         for (let item of items) {
+
+//         const response =
+//             await axios.post(
+//             "http://127.0.0.1:8000/text-similarity",
+//             {
+//                 text1: newItem.description,
+//                 text2: item.description
+//             }
+//             );
+
+//         const similarity =
+//             response.data.similarity;
+
+//         console.log(
+//             "SIMILARITY SCORE:",
+//             similarity
+//         );
+
+//         if (
+//             similarity >= 0.65 &&
+//             similarity > bestScore
+//         ) {
+//             bestScore = similarity;
+//             bestMatch = item;
+//         }
+//         }
+
+//         let matchedItems = [];
+
+//         if (bestMatch) {
+
+//     matchedItems.push({
+//         item:
+//             bestMatch,
+
+//         similarity:
+//             bestScore
+//     });
+
+// }
+//         const validMatches = matchedItems.filter(
+//             (match) => match.item && match.item._id
+//         );
+
+//         newItem.matchedItems = validMatches.map((match) => ({
+//             itemId: match.item._id,
+//             similarity: match.similarity,
+//         }));
+
+
+// CREATE ITEM
 exports.createItem = async (req, res) => {
+
     try {
 
         console.log(req.body);
@@ -11,71 +86,118 @@ exports.createItem = async (req, res) => {
         const newItem = await Item.create({
             ...req.body,
             userId: req.body.userId,
-            image: req.file ? req.file.filename : ""
+            image: req.file
+                ? req.file.filename
+                : ""
         });
 
         const oppositeType =
-            newItem.type === "lost" ? "found" : "lost";
+            newItem.type === "lost"
+                ? "found"
+                : "lost";
 
-        const items = await Item.find({
-            type: oppositeType
-        });
+        const items =
+            await Item.find({
+                type: oppositeType
+            });
 
-       let bestMatch = null;
-        let bestScore = 0;
+        let bestMatch =
+            null;
+
+        let bestScore =
+            0;
 
         for (let item of items) {
 
-        const response =
-            await axios.post(
-            "http://127.0.0.1:8000/text-similarity",
-            {
-                text1: newItem.description,
-                text2: item.description
-            }
+            const response =
+                await axios.post(
+                    "http://127.0.0.1:8000/text-similarity",
+                    {
+                        text1:
+                            newItem.description,
+
+                        text2:
+                            item.description
+                    }
+                );
+
+            const similarity =
+                response.data.similarity;
+
+            console.log(
+                "SIMILARITY SCORE:",
+                similarity
             );
 
-        const similarity =
-            response.data.similarity;
+            if (
+                similarity >= 0.65 &&
+                similarity > bestScore
+            ) {
 
-        console.log(
-            "SIMILARITY SCORE:",
-            similarity
-        );
+                bestScore =
+                    similarity;
 
-        if (
-            similarity >= 0.65 &&
-            similarity > bestScore
-        ) {
-            bestScore = similarity;
-            bestMatch = item;
-        }
+                bestMatch =
+                    item;
+            }
         }
 
         let matchedItems = [];
 
         if (bestMatch) {
 
-    matchedItems.push({
-        item:
-            bestMatch,
+            matchedItems.push({
+                item:
+                    bestMatch,
 
-        similarity:
-            bestScore
-    });
+                similarity:
+                    bestScore
+            });
 
-}
+        }
 
+        const validMatches =
+            matchedItems.filter(
+                (match) =>
+                    match.item &&
+                    match.item._id
+            );
 
-        const validMatches = matchedItems.filter(
-            (match) => match.item && match.item._id
-        );
+        newItem.matchedItems =
+            validMatches.map(
+                (match) => ({
+                    itemId:
+                        match.item._id,
 
-        newItem.matchedItems = validMatches.map((match) => ({
-            itemId: match.item._id,
-            similarity: match.similarity,
-        }));
+                    similarity:
+                        match.similarity,
+                })
+            );
 
+        await newItem.save();
+
+        res.status(201).json({
+
+            message:
+                "Item Posted Successfully",
+
+            newItem,
+            matchedItems
+
+        });
+
+    } catch (error) {
+
+        res.status(500).json({
+
+            message:
+                error.message
+
+        });
+
+    }
+
+};
 
 // GET ALL ITEMS
 exports.getAllItems = async (req, res) => {

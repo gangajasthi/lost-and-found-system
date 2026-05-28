@@ -13,6 +13,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import ApprovedItems from "./pages/ApprovedItems";
 import RejectedItems from "./pages/RejectedItems";
 import ForgotPassword from "./pages/ForgotPassword";
+import AdminClaims from "./pages/AdminClaims";
 
 
 function App() {
@@ -52,6 +53,8 @@ function App() {
         {/* <Route path="/forgot-password" element={<ForgotPassword />} /> */}
 
         <Route path="/forgot-password" element={<ForgotPassword />} />
+
+        <Route path="/admin-claims" element={<AdminClaims />} />
 
       </Routes>
 

@@ -9,7 +9,7 @@ const API = "http://localhost:5000/api";
 // Renders differently based on item.type:
 //   lost  → show title, description, original image, "I Found This" button
 //   found → show adminTitle, adminDescription, adminImage only if set, "Claim This Item" button
-function ItemCard({ item, onAction }) {
+function ItemCard({ item, onAction , alreadyClaimed }) {
   const isLost = item.type === "lost";
 
   // Values to display
@@ -74,19 +74,39 @@ function ItemCard({ item, onAction }) {
           </div>
         </div>
 
-        {/* CTA button */}
-        <button
-          onClick={() => onAction(item)}
-          className={`w-full py-2.5 rounded-xl text-white text-xs font-bold transition-colors shadow-sm
-            ${isLost
-              ? "bg-orange-500 hover:bg-orange-600"
-              : "bg-blue-600 hover:bg-blue-700"}`}
-        >
-          {isLost ? "I Found This" : "Claim This Item"}
-        </button>
-      </div>
-    </div>
-  );
+{/* CTA button */}
+<button
+  disabled={alreadyClaimed}
+  onClick={() =>
+    onAction(item)
+  }
+  className={`w-full py-2.5 rounded-xl text-xs font-bold transition-colors shadow-sm
+
+    ${
+      alreadyClaimed
+        ? "bg-green-100 text-green-700 cursor-not-allowed"
+
+        : isLost
+        ? "bg-orange-500 hover:bg-orange-600 text-white"
+
+        : "bg-blue-600 hover:bg-blue-700 text-white"
+    }`}
+>
+
+  {alreadyClaimed
+
+    ? "Already Submitted ✅"
+
+    : isLost
+
+    ? "I Found This"
+
+    : "Claim This Item"}
+
+</button>
+</div>
+</div>
+);
 }
 
 // ── Component ────────────────────────────────────────────────────
@@ -153,12 +173,28 @@ export default function Claims() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      // await axios.post(`${API}/claims`, {
+      //   itemId: actionModal._id,
+      //   claimantName:  user.name,
+      //   claimantEmail: user.email,
+      //   message:       actionReason,
+      // });
       await axios.post(`${API}/claims`, {
-        itemId: actionModal._id,
-        claimantName:  user.name,
-        claimantEmail: user.email,
-        message:       actionReason,
-      });
+  itemId: actionModal._id,
+
+  claimantName:
+    user.name,
+
+  claimantEmail:
+    user.email,
+
+  message:
+    actionReason,
+
+  userId:
+    user._id
+});
+      alert("✅ Claim submitted successfully");
       setActionSubmitted(true);
       setActionModal(null);
       setActionReason("");
@@ -257,7 +293,7 @@ export default function Claims() {
           {/* Items Grid */}
           {!itemsLoading && !itemsError && browseItems.length > 0 && (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-              {browseItems
+              {/* {browseItems
                   .filter(
                     (item) => item.userId !== user?._id
                   )
@@ -267,7 +303,31 @@ export default function Claims() {
                       item={item}
                       onAction={setActionModal}
                     />
-              ))}
+              ))} */}
+
+              {browseItems
+  .filter(
+    (item) => item.userId !== user?._id
+  )
+  .map((item) => {
+
+    const alreadyClaimed =
+      myClaims.some(
+        (claim) =>
+          claim.itemId?._id === item._id
+      );
+
+    return (
+
+      <ItemCard
+        key={item._id}
+        item={item}
+        onAction={setActionModal}
+        alreadyClaimed={alreadyClaimed}
+      />
+
+    );
+  })}
             </div>
           )}
         </div>
@@ -295,13 +355,38 @@ export default function Claims() {
             <div key={claim._id} className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <h3 className="text-sm font-bold text-gray-900">
-                    {claim.itemId?.title || "Item"}
-                  </h3>
-                  <p className="text-xs text-gray-400 mt-0.5">
-                    Claimed on {new Date(claim.createdAt).toLocaleDateString()}
-                  </p>
-                </div>
+                  <div className="flex items-center gap-2">
+                       <h3 className="text-sm font-bold text-gray-900">
+                            {claim.itemId?.title || "Item"}
+                        </h3>
+            <span
+              className={`text-[10px] font-bold px-2 py-0.5 rounded-full capitalize
+              ${
+                claim.itemId?.type === "lost"
+                ? "bg-orange-100 text-orange-700"
+                : "bg-blue-100 text-blue-700"
+      }`}
+    >
+      {claim.itemId?.type}
+    </span>
+
+  </div>
+
+  <p className="text-xs text-gray-400 mt-1">
+    Claimed on{" "}
+    {new Date(
+      claim.createdAt
+    ).toLocaleDateString()}
+  </p>
+
+  <p className="text-xs text-gray-600 mt-2">
+    <span className="font-semibold">
+      Message:
+    </span>{" "}
+    {claim.message}
+  </p>
+
+</div>
                 <StatusBadge status={claim.status} />
               </div>
               {claim.adminNote && (
