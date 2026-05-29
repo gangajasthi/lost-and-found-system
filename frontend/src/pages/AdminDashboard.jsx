@@ -92,6 +92,7 @@ function FoundApprovalModal({ report, onClose, onApproved }) {
   const [imageFile, setImageFile]               = useState(null);
   const [submitting, setSubmitting]             = useState(false);
   const [error, setError]                       = useState("");
+  //const [claims, setClaims]                     = useState([]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -458,8 +459,10 @@ export default function AdminDashboard() {
   const [selectedReport, setSelectedReport]     = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
 
+  const [claims, setClaims]                     = useState([]);
   useEffect(() => {
     fetchReports();
+    fetchClaims();
   }, []);
 
   const fetchReports = async () => {
@@ -470,6 +473,14 @@ export default function AdminDashboard() {
       console.log(error);
     }
   };
+  const fetchClaims = async () => {
+  try {
+    const response = await axios.get("http://localhost:5000/api/claims");
+    setClaims(response.data);
+  } catch (error) {
+    console.log(error);
+  }
+};
 
   const pendingReports =
   reports.filter((r) => r.status !== "approved");
@@ -494,10 +505,6 @@ const pendingLost =
         .includes(
           searchTerm.toLowerCase()
         )
-  );
-  
-  pendingReports.filter(
-    (r) => r.type === "lost"
   );
 
 const pendingFound =
@@ -634,9 +641,47 @@ const pendingFound =
         })}
       </div>
 
-      {/* Approved + Rejected Cards */}
-<div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
 
+      
+      {/* <div className="bg-white rounded-2xl border border-gray-200 p-5 mb-6">
+
+  <h2 className="text-lg font-bold mb-4">
+    Claims
+  </h2>
+
+  {claims.map((claim) => (
+
+    <div
+      key={claim._id}
+      className="border rounded-xl p-3 mb-3"
+    >
+
+      <h3 className="font-bold">
+        {claim.itemId?.title}
+      </h3>
+
+      <p>
+        {claim.claimantName}
+      </p>
+
+      <p>
+        {claim.message}
+      </p>
+
+      <p>
+        {claim.status}
+      </p>
+
+    </div>
+
+  ))}
+
+</div> */}
+
+{/* Approved + Rejected + Claims Cards */}
+<div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+
+  {/* Approved */}
   <div
     onClick={() =>
       navigate("/approved-items")
@@ -658,6 +703,7 @@ const pendingFound =
 
   </div>
 
+  {/* Rejected */}
   <div
     onClick={() =>
       navigate("/rejected-items")
@@ -683,6 +729,28 @@ const pendingFound =
 
     <p className="text-[11px] font-medium mt-1 text-red-600">
       View rejected item details
+    </p>
+
+  </div>
+
+  {/* Claims */}
+  <div
+    onClick={() =>
+      navigate("/admin-claims")
+    }
+    className="rounded-2xl p-5 border border-gray-100 shadow-sm bg-blue-50 cursor-pointer hover:shadow-md transition"
+  >
+
+    <p className="text-2xl font-black text-gray-900">
+      {claims.length}
+    </p>
+
+    <p className="text-xs font-semibold text-gray-600 mt-1">
+      Claims
+    </p>
+
+    <p className="text-[11px] font-medium mt-1 text-blue-600">
+      View claims details
     </p>
 
   </div>

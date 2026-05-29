@@ -9,7 +9,7 @@ const API = "http://localhost:5000/api";
 // Renders differently based on item.type:
 //   lost  → show title, description, original image, "I Found This" button
 //   found → show adminTitle, adminDescription, adminImage only if set, "Claim This Item" button
-function ItemCard({ item, onAction }) {
+function ItemCard({ item, onAction , alreadyClaimed }) {
   const isLost = item.type === "lost";
 
   // Values to display
@@ -74,19 +74,39 @@ function ItemCard({ item, onAction }) {
           </div>
         </div>
 
-        {/* CTA button */}
-        <button
-          onClick={() => onAction(item)}
-          className={`w-full py-2.5 rounded-xl text-white text-xs font-bold transition-colors shadow-sm
-            ${isLost
-              ? "bg-orange-500 hover:bg-orange-600"
-              : "bg-blue-600 hover:bg-blue-700"}`}
-        >
-          {isLost ? "I Found This" : "Claim This Item"}
-        </button>
-      </div>
-    </div>
-  );
+{/* CTA button */}
+<button
+  disabled={alreadyClaimed}
+  onClick={() =>
+    onAction(item)
+  }
+  className={`w-full py-2.5 rounded-xl text-xs font-bold transition-colors shadow-sm
+
+    ${
+      alreadyClaimed
+        ? "bg-green-100 text-green-700 cursor-not-allowed"
+
+        : isLost
+        ? "bg-orange-500 hover:bg-orange-600 text-white"
+
+        : "bg-blue-600 hover:bg-blue-700 text-white"
+    }`}
+>
+
+  {alreadyClaimed
+
+    ? "Already Submitted ✅"
+
+    : isLost
+
+    ? "I Found This"
+
+    : "Claim This Item"}
+
+</button>
+</div>
+</div>
+);
 }
 
 // ── Component ────────────────────────────────────────────────────
@@ -119,7 +139,13 @@ export default function Claims() {
         setItemsError("");
         const res = await axios.get(`${API}/items`);
         // Show all approved items — lost AND found
-        const filtered = res.data.filter((item) => item.status === "approved");
+        // const filtered = res.data.filter((item) => item.status === "approved");
+        const filtered =
+  res.data.filter(
+    (item) =>
+      item.status === "approved" &&
+      !item.resolved
+  );
         setBrowseItems(filtered);
       } catch (err) {
         setItemsError("Failed to load items. Please try again.");
@@ -154,12 +180,28 @@ export default function Claims() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      // await axios.post(`${API}/claims`, {
+      //   itemId: actionModal._id,
+      //   claimantName:  user.name,
+      //   claimantEmail: user.email,
+      //   message:       actionReason,
+      // });
       await axios.post(`${API}/claims`, {
-        itemId: actionModal._id,
-        claimantName:  user.name,
-        claimantEmail: user.email,
-        message:       actionReason,
-      });
+  itemId: actionModal._id,
+
+  claimantName:
+    user.name,
+
+  claimantEmail:
+    user.email,
+
+  message:
+    actionReason,
+
+  userId:
+    user._id
+});
+      alert("✅ Claim submitted successfully");
       setActionSubmitted(true);
       setActionModal(null);
       setActionReason("");
@@ -426,6 +468,121 @@ export default function Claims() {
                         </div>
                       </div>
                     )}
+          {/* Empty */}
+          {!itemsLoading && !itemsError && browseItems.length === 0 && (
+            <div className="text-center py-20">
+              <p className="text-gray-400 font-medium">No approved items available yet</p>
+            </div>
+          )}
+
+          {/* Items Grid */}
+          {!itemsLoading && !itemsError && browseItems.length > 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              {/* {browseItems
+                  .filter(
+                    (item) => item.userId !== user?._id
+                  )
+                  .map((item) => (
+                    <ItemCard
+                      key={item._id}
+                      item={item}
+                      onAction={setActionModal}
+                    />
+              ))} */}
+
+              {browseItems
+  .filter(
+    (item) => item.userId !== user?._id
+  )
+  .map((item) => {
+
+    const alreadyClaimed =
+      myClaims.some(
+        (claim) =>
+          claim.itemId?._id === item._id
+      );
+
+    return (
+
+      <ItemCard
+        key={item._id}
+        item={item}
+        onAction={setActionModal}
+        alreadyClaimed={alreadyClaimed}
+      />
+
+    );
+  })}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── My Claims Tab ── */}
+      {activeTab === "my-claims" && (
+        <div className="space-y-4">
+          {claimsLoading && (
+            <div className="text-center py-20">
+              <p className="text-gray-400 font-medium">Loading your claims…</p>
+            </div>
+          )}
+          {!claimsLoading && claimsError && (
+            <div className="text-center py-20">
+              <p className="text-red-400 font-medium">{claimsError}</p>
+            </div>
+          )}
+          {!claimsLoading && !claimsError && myClaims.length === 0 && (
+            <div className="text-center py-20">
+              <p className="text-gray-400 font-medium">No claims submitted yet</p>
+            </div>
+          )}
+          {!claimsLoading && !claimsError && myClaims.map((claim) => (
+            <div key={claim._id} className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <div className="flex items-center gap-2">
+                       <h3 className="text-sm font-bold text-gray-900">
+                            {claim.itemId?.title || "Item"}
+                        </h3>
+            <span
+              className={`text-[10px] font-bold px-2 py-0.5 rounded-full capitalize
+              ${
+                claim.itemId?.type === "lost"
+                ? "bg-orange-100 text-orange-700"
+                : "bg-blue-100 text-blue-700"
+      }`}
+    >
+      {claim.itemId?.type}
+    </span>
+
+  </div>
+
+  <p className="text-xs text-gray-400 mt-1">
+    Claimed on{" "}
+    {new Date(
+      claim.createdAt
+    ).toLocaleDateString()}
+  </p>
+
+  <p className="text-xs text-gray-600 mt-2">
+    <span className="font-semibold">
+      Message:
+    </span>{" "}
+    {claim.message}
+  </p>
+
+</div>
+                <StatusBadge status={claim.status} />
+              </div>
+              {claim.adminNote && (
+                <div className="mt-4 flex items-start gap-2 p-3 rounded-xl bg-blue-50 border border-blue-100">
+                  <svg className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                      d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                  </svg>
+                  <div>
+                    <p className="text-xs font-semibold text-blue-800 mb-0.5">Admin Note</p>
+                    <p className="text-xs text-blue-700">{claim.adminNote}</p>
                   </div>
             ))}
           </div>

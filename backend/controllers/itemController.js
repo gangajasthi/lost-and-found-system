@@ -2,6 +2,80 @@ const Item = require("../models/Item");
 const axios = require("axios");
 
 // CREATE ITEM
+// exports.createItem = async (req, res) => {
+//     try {
+
+//         console.log(req.body);
+//         console.log(req.file);
+
+//         const newItem = await Item.create({
+//             ...req.body,
+//             userId: req.body.userId,
+//             image: req.file ? req.file.filename : ""
+//         });
+
+//         const oppositeType =
+//             newItem.type === "lost" ? "found" : "lost";
+
+//         const items = await Item.find({
+//             type: oppositeType
+//         });
+
+//        let bestMatch = null;
+//         let bestScore = 0;
+
+//         for (let item of items) {
+
+//         const response =
+//             await axios.post(
+//             "http://127.0.0.1:8000/text-similarity",
+//             {
+//                 text1: newItem.description,
+//                 text2: item.description
+//             }
+//             );
+
+//         const similarity =
+//             response.data.similarity;
+
+//         console.log(
+//             "SIMILARITY SCORE:",
+//             similarity
+//         );
+
+//         if (
+//             similarity >= 0.65 &&
+//             similarity > bestScore
+//         ) {
+//             bestScore = similarity;
+//             bestMatch = item;
+//         }
+//         }
+
+//         let matchedItems = [];
+
+//         if (bestMatch) {
+
+//     matchedItems.push({
+//         item:
+//             bestMatch,
+
+//         similarity:
+//             bestScore
+//     });
+
+// }
+//         const validMatches = matchedItems.filter(
+//             (match) => match.item && match.item._id
+//         );
+
+//         newItem.matchedItems = validMatches.map((match) => ({
+//             itemId: match.item._id,
+//             similarity: match.similarity,
+//         }));
+
+
+// CREATE ITEM
 exports.createItem = async (req, res) => {
 
     try {
@@ -12,7 +86,9 @@ exports.createItem = async (req, res) => {
         const newItem = await Item.create({
             ...req.body,
             userId: req.body.userId,
-            image: req.file ? req.file.filename : ""
+            image: req.file
+                ? req.file.filename
+                : ""
         });
 
         const oppositeType =
@@ -20,68 +96,71 @@ exports.createItem = async (req, res) => {
                 ? "found"
                 : "lost";
 
-        const items = await Item.find({
-            type: oppositeType,
-            resolved: { $ne: true }
-        });
+        const items =
+            await Item.find({
+                type: oppositeType,
+                resolved: { $ne: true }
+            });
+
         let bestMatch = null;
         let bestScore = 0;
 
         for (let item of items) {
 
             const textResponse =
-    await axios.post(
-        "http://127.0.0.1:8000/text-similarity",
-        {
-            text1: newItem.description,
-            text2: item.description
-        }
-    );
+                await axios.post(
+                    "http://127.0.0.1:8000/text-similarity",
+                    {
+                        text1:
+                            newItem.description,
 
-const textSimilarity =
-    textResponse.data.similarity;
+                        text2:
+                            item.description
+                    }
+                );
 
-let imageSimilarity = 0;
+            const textSimilarity =
+                textResponse.data.similarity;
 
-if (newItem.image && item.image) {
+            let imageSimilarity = 0;
 
-    const imageResponse =
-        await axios.post(
-            "http://127.0.0.1:8000/image-similarity",
-            {
-                image1:
-                    `../backend/uploads/${newItem.image}`,
+            if (
+                newItem.image &&
+                item.image
+            ) {
 
-                image2:
-                    `../backend/uploads/${item.image}`
+                const imageResponse =
+                    await axios.post(
+                        "http://127.0.0.1:8000/image-similarity",
+                        {
+                            image1:
+                                `../backend/uploads/${newItem.image}`,
+
+                            image2:
+                                `../backend/uploads/${item.image}`
+                        }
+                    );
+
+                imageSimilarity =
+                    imageResponse.data.similarity;
             }
-        );
 
-    imageSimilarity =
-        imageResponse.data.similarity;
-        }
+            let similarity = 0;
 
-       let similarity = 0;
+            if (
+                textSimilarity >= 0.50 &&
+                imageSimilarity >= 30
+            ) {
 
-        if (
-            textSimilarity >= 0.50 &&
-            imageSimilarity >= 30
-        ) {
-
-            similarity =
-                (
-                    textSimilarity +
-                    (imageSimilarity / 100)
-                ) / 2;
-        }
-
-        console.log(
-            "FINAL SCORE:",
-            similarity
-        );
+                similarity =
+                    (
+                        textSimilarity +
+                        (imageSimilarity / 100)
+                    ) / 2;
+            }
 
             console.log(
-                "SIMILARITY SCORE:",
+                "FINAL SCORE:",
                 similarity
             );
 
@@ -89,8 +168,12 @@ if (newItem.image && item.image) {
                 similarity >= 0.30 &&
                 similarity > bestScore
             ) {
-                bestScore = similarity;
-                bestMatch = item;
+
+                bestScore =
+                    similarity;
+
+                bestMatch =
+                    item;
             }
         }
 
@@ -99,8 +182,11 @@ if (newItem.image && item.image) {
         if (bestMatch) {
 
             matchedItems.push({
-                item: bestMatch,
-                similarity: bestScore
+                item:
+                    bestMatch,
+
+                similarity:
+                    bestScore
             });
 
         }
@@ -113,23 +199,35 @@ if (newItem.image && item.image) {
             );
 
         newItem.matchedItems =
-            validMatches.map((match) => ({
-                itemId: match.item._id,
-                similarity: match.similarity,
-            }));
+            validMatches.map(
+                (match) => ({
+                    itemId:
+                        match.item._id,
+
+                    similarity:
+                        match.similarity
+                })
+            );
 
         await newItem.save();
 
         res.status(201).json({
+
             message:
-                "Item created successfully",
-            item: newItem
+                "Item Posted Successfully",
+
+            newItem,
+            matchedItems
+
         });
 
     } catch (error) {
 
         res.status(500).json({
-            message: error.message
+
+            message:
+                error.message
+
         });
 
     }
