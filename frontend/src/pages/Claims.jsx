@@ -6,22 +6,16 @@ import StatusBadge from "../components/StatusBadge";
 const API = "http://localhost:5000/api";
 
 // ── Item Card ────────────────────────────────────────────────────
-// Renders differently based on item.type:
-//   lost  → show title, description, original image, "I Found This" button
-//   found → show adminTitle, adminDescription, adminImage only if set, "Claim This Item" button
-function ItemCard({ item, onAction , alreadyClaimed }) {
+function ItemCard({ item, onAction, alreadyClaimed }) {
   const isLost = item.type === "lost";
 
-  // Values to display
   const displayTitle       = isLost ? item.title       : item.adminTitle;
   const displayDescription = isLost ? item.description : item.adminDescription;
-  // Image: lost uses original; found uses adminImage only if explicitly set
-  const displayImage       = isLost ? item.image : item.adminImage;
+  const displayImage       = isLost ? item.image        : item.adminImage;
   const hasImage           = Boolean(displayImage);
 
   return (
     <div className="bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-all flex flex-col">
-      {/* Image area — only render if there is an image */}
       {hasImage && (
         <div className="h-36 bg-gradient-to-br from-gray-100 to-gray-200 rounded-t-2xl flex items-center justify-center overflow-hidden">
           <img
@@ -32,13 +26,11 @@ function ItemCard({ item, onAction , alreadyClaimed }) {
         </div>
       )}
 
-      {/* If no image, show a subtle top accent bar so the card doesn't feel broken */}
       {!hasImage && (
         <div className={`h-2 rounded-t-2xl ${isLost ? "bg-orange-200" : "bg-teal-200"}`} />
       )}
 
       <div className="p-4 flex flex-col flex-1">
-        {/* Title + badge row */}
         <div className="flex items-start justify-between gap-2 mb-2">
           <h3 className="text-sm font-bold text-gray-900">{displayTitle}</h3>
           <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full capitalize flex-shrink-0
@@ -49,7 +41,6 @@ function ItemCard({ item, onAction , alreadyClaimed }) {
 
         <p className="text-xs text-gray-500 mb-3 flex-1 line-clamp-2">{displayDescription}</p>
 
-        {/* Meta */}
         <div className="space-y-1.5 mb-4">
           <div className="flex items-center gap-2 text-xs text-gray-500">
             <svg className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -74,78 +65,53 @@ function ItemCard({ item, onAction , alreadyClaimed }) {
           </div>
         </div>
 
-{/* CTA button */}
-<button
-  disabled={alreadyClaimed}
-  onClick={() =>
-    onAction(item)
-  }
-  className={`w-full py-2.5 rounded-xl text-xs font-bold transition-colors shadow-sm
-
-    ${
-      alreadyClaimed
-        ? "bg-green-100 text-green-700 cursor-not-allowed"
-
-        : isLost
-        ? "bg-orange-500 hover:bg-orange-600 text-white"
-
-        : "bg-blue-600 hover:bg-blue-700 text-white"
-    }`}
->
-
-  {alreadyClaimed
-
-    ? "Already Submitted ✅"
-
-    : isLost
-
-    ? "I Found This"
-
-    : "Claim This Item"}
-
-</button>
-</div>
-</div>
-);
+        <button
+          disabled={alreadyClaimed}
+          onClick={() => onAction(item)}
+          className={`w-full py-2.5 rounded-xl text-xs font-bold transition-colors shadow-sm
+            ${alreadyClaimed
+              ? "bg-green-100 text-green-700 cursor-not-allowed"
+              : isLost
+              ? "bg-orange-500 hover:bg-orange-600 text-white"
+              : "bg-blue-600 hover:bg-blue-700 text-white"
+            }`}
+        >
+          {alreadyClaimed ? "Already Submitted ✅" : isLost ? "I Found This" : "Claim This Item"}
+        </button>
+      </div>
+    </div>
+  );
 }
 
-// ── Component ────────────────────────────────────────────────────
+// ── Main Component ───────────────────────────────────────────────
 export default function Claims() {
   const user = JSON.parse(localStorage.getItem("user") || "{}");
 
   const [activeTab, setActiveTab] = useState("browse");
 
-  // Modals / forms
-  const [actionModal, setActionModal]   = useState(null); // item being acted on
-  const [actionReason, setActionReason] = useState("");
+  const [actionModal, setActionModal]       = useState(null);
+  const [actionReason, setActionReason]     = useState("");
   const [actionSubmitted, setActionSubmitted] = useState(false);
 
-  // Browse tab state — holds BOTH approved lost and found items
   const [browseItems, setBrowseItems]   = useState([]);
   const [itemsLoading, setItemsLoading] = useState(true);
   const [itemsError, setItemsError]     = useState("");
 
-  // My Claims tab state
-  const [myClaims, setMyClaims]         = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [myClaims, setMyClaims]           = useState([]);
+  const [searchTerm, setSearchTerm]       = useState("");
   const [claimsLoading, setClaimsLoading] = useState(true);
-  const [claimsError, setClaimsError]   = useState("");
+  const [claimsError, setClaimsError]     = useState("");
 
-  // ── Fetch approved items (both lost and found) ─────────────────
+  // ── Fetch approved items ───────────────────────────────────────
   useEffect(() => {
     const fetchItems = async () => {
       try {
         setItemsLoading(true);
         setItemsError("");
         const res = await axios.get(`${API}/items`);
-        // Show all approved items — lost AND found
-        // const filtered = res.data.filter((item) => item.status === "approved");
-        const filtered =
-  res.data.filter(
-    (item) =>
-      item.status === "approved" &&
-      !item.resolved
-  );
+        const filtered = res.data.filter(
+          (item) => item.status === "approved" && !item.resolved
+        );
         setBrowseItems(filtered);
       } catch (err) {
         setItemsError("Failed to load items. Please try again.");
@@ -176,31 +142,17 @@ export default function Claims() {
     fetchMyClaims();
   }, [actionSubmitted, user?.email]);
 
-  // ── Handle claim / "I Found This" submission ───────────────────
+  // ── Submit claim ───────────────────────────────────────────────
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // await axios.post(`${API}/claims`, {
-      //   itemId: actionModal._id,
-      //   claimantName:  user.name,
-      //   claimantEmail: user.email,
-      //   message:       actionReason,
-      // });
       await axios.post(`${API}/claims`, {
-  itemId: actionModal._id,
-
-  claimantName:
-    user.name,
-
-  claimantEmail:
-    user.email,
-
-  message:
-    actionReason,
-
-  userId:
-    user._id
-});
+        itemId:        actionModal._id,
+        claimantName:  user.name,
+        claimantEmail: user.email,
+        message:       actionReason,
+        userId:        user._id,
+      });
       alert("✅ Claim submitted successfully");
       setActionSubmitted(true);
       setActionModal(null);
@@ -264,116 +216,82 @@ export default function Claims() {
 
       {/* ── Browse Tab ── */}
       {activeTab === "browse" && (
-  <div>
+        <div>
+          <div className="mb-5">
+            <input
+              type="text"
+              placeholder="Search items..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full md:w-96 px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
 
-    <div className="mb-5">
-      <input
-        type="text"
-        placeholder="Search items..."
-        value={searchTerm}
-        onChange={(e) =>
-          setSearchTerm(e.target.value)
-        }
-        className="w-full md:w-96 px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-      />
-    </div>
+          <div className="flex items-start gap-3 p-4 rounded-xl bg-blue-50 border border-blue-200 mb-5">
+            <svg className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <p className="text-xs text-blue-700">
+              <strong>Lost items:</strong> if you found one, let us know. &nbsp;
+              <strong>Found items:</strong> if something belongs to you, click "Claim This Item" and provide proof. Admin will verify offline.
+            </p>
+          </div>
 
-    {/* Info banner */}
-    <div className="flex items-start gap-3 p-4 rounded-xl bg-blue-50 border border-blue-200 mb-5">
-      <svg
-        className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-        />
-      </svg>
+          {itemsLoading && (
+            <div className="text-center py-20">
+              <p className="text-gray-400 font-medium">Loading items…</p>
+            </div>
+          )}
 
-      <p className="text-xs text-blue-700">
-        <strong>Lost items:</strong> if you found one, let us know. &nbsp;
-        <strong>Found items:</strong> if something belongs to you, click
-        "Claim This Item" and provide proof. Admin will verify offline.
-      </p>
-    </div>
+          {!itemsLoading && itemsError && (
+            <div className="text-center py-20">
+              <p className="text-red-400 font-medium">{itemsError}</p>
+            </div>
+          )}
 
-    {/* Loading */}
-    {itemsLoading && (
-      <div className="text-center py-20">
-        <p className="text-gray-400 font-medium">
-          Loading items…
-        </p>
-      </div>
-    )}
+          {!itemsLoading && !itemsError && browseItems.length === 0 && (
+            <div className="text-center py-20">
+              <p className="text-gray-400 font-medium">No approved items available yet</p>
+            </div>
+          )}
 
-    {/* Error */}
-    {!itemsLoading && itemsError && (
-      <div className="text-center py-20">
-        <p className="text-red-400 font-medium">
-          {itemsError}
-        </p>
-      </div>
-    )}
-
-    {/* Empty */}
-    {!itemsLoading &&
-      !itemsError &&
-      browseItems.length === 0 && (
-        <div className="text-center py-20">
-          <p className="text-gray-400 font-medium">
-            No approved items available yet
-          </p>
-        </div>
-    )}
-
-    {/* Items Grid */}
-    {!itemsLoading &&
-      !itemsError &&
-      browseItems.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {browseItems
-            .filter(
-              (item) =>
-                item.userId !== user?._id
-            )
-            .filter((item) =>
-              (
-                item.title ||
-                item.adminTitle ||
-                ""
-              )
-                .toLowerCase()
-                .includes(
-                  searchTerm.toLowerCase()
+          {!itemsLoading && !itemsError && browseItems.length > 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              {browseItems
+                .filter((item) => item.userId !== user?._id)
+                .filter((item) =>
+                  (item.title || item.adminTitle || "")
+                    .toLowerCase()
+                    .includes(searchTerm.toLowerCase())
                 )
-            )
-            .map((item) => (
-              <ItemCard
-                key={item._id}
-                item={item}
-                onAction={setActionModal}
-              />
-          ))}
+                .map((item) => {
+                  const alreadyClaimed = myClaims.some(
+                    (claim) => claim.itemId?._id === item._id
+                  );
+                  return (
+                    <ItemCard
+                      key={item._id}
+                      item={item}
+                      onAction={setActionModal}
+                      alreadyClaimed={alreadyClaimed}
+                    />
+                  );
+                })}
+            </div>
+          )}
         </div>
-    )}
-  </div>
-)}
+      )}
 
+      {/* ── My Claims Tab ── */}
       {activeTab === "my-claims" && (
         <div>
-
           <div className="mb-5">
             <input
               type="text"
               placeholder="Search claims..."
               value={searchTerm}
-              onChange={(e) =>
-                setSearchTerm(e.target.value)
-              }
+              onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full md:w-96 px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -381,41 +299,29 @@ export default function Claims() {
           <div className="space-y-4">
             {claimsLoading && (
               <div className="text-center py-20">
-                <p className="text-gray-400 font-medium">
-                  Loading your claims…
-                </p>
+                <p className="text-gray-400 font-medium">Loading your claims…</p>
               </div>
             )}
 
             {!claimsLoading && claimsError && (
               <div className="text-center py-20">
-                <p className="text-red-400 font-medium">
-                  {claimsError}
-                </p>
+                <p className="text-red-400 font-medium">{claimsError}</p>
               </div>
             )}
 
-            {!claimsLoading &&
-              !claimsError &&
-              myClaims.length === 0 && (
-                <div className="text-center py-20">
-                  <p className="text-gray-400 font-medium">
-                    No claims submitted yet
-                  </p>
-                </div>
+            {!claimsLoading && !claimsError && myClaims.length === 0 && (
+              <div className="text-center py-20">
+                <p className="text-gray-400 font-medium">No claims submitted yet</p>
+              </div>
             )}
 
             {!claimsLoading &&
               !claimsError &&
               myClaims
                 .filter((claim) =>
-                  (
-                    claim.itemId?.title || ""
-                  )
+                  (claim.itemId?.title || "")
                     .toLowerCase()
-                    .includes(
-                      searchTerm.toLowerCase()
-                    )
+                    .includes(searchTerm.toLowerCase())
                 )
                 .map((claim) => (
                   <div
@@ -427,177 +333,43 @@ export default function Claims() {
                         <h3 className="text-sm font-bold text-gray-900">
                           {claim.itemId?.title || "Item"}
                         </h3>
-
                         <p className="text-xs text-gray-400 mt-0.5">
-                          Claimed on{" "}
-                          {new Date(
-                            claim.createdAt
-                          ).toLocaleDateString()}
+                          Claimed on {new Date(claim.createdAt).toLocaleDateString()}
                         </p>
                       </div>
-
-                      <StatusBadge
-                        status={claim.status}
-                      />
+                      <StatusBadge status={claim.status} />
                     </div>
+
+                    {claim.message && (
+                      <div className="mt-3">
+                        <p className="text-xs text-gray-500">{claim.message}</p>
+                      </div>
+                    )}
 
                     {claim.adminNote && (
                       <div className="mt-4 flex items-start gap-2 p-3 rounded-xl bg-blue-50 border border-blue-100">
-                        <svg
-                          className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
-                          />
+                        <svg className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                            d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
                         </svg>
-
                         <div>
-                          <p className="text-xs font-semibold text-blue-800 mb-0.5">
-                            Admin Note
-                          </p>
-
-                          <p className="text-xs text-blue-700">
-                            {claim.adminNote}
-                          </p>
+                          <p className="text-xs font-semibold text-blue-800 mb-0.5">Admin Note</p>
+                          <p className="text-xs text-blue-700">{claim.adminNote}</p>
                         </div>
                       </div>
                     )}
-          {/* Empty */}
-          {!itemsLoading && !itemsError && browseItems.length === 0 && (
-            <div className="text-center py-20">
-              <p className="text-gray-400 font-medium">No approved items available yet</p>
-            </div>
-          )}
-
-          {/* Items Grid */}
-          {!itemsLoading && !itemsError && browseItems.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-              {/* {browseItems
-                  .filter(
-                    (item) => item.userId !== user?._id
-                  )
-                  .map((item) => (
-                    <ItemCard
-                      key={item._id}
-                      item={item}
-                      onAction={setActionModal}
-                    />
-              ))} */}
-
-              {browseItems
-  .filter(
-    (item) => item.userId !== user?._id
-  )
-  .map((item) => {
-
-    const alreadyClaimed =
-      myClaims.some(
-        (claim) =>
-          claim.itemId?._id === item._id
-      );
-
-    return (
-
-      <ItemCard
-        key={item._id}
-        item={item}
-        onAction={setActionModal}
-        alreadyClaimed={alreadyClaimed}
-      />
-
-    );
-  })}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* ── My Claims Tab ── */}
-      {activeTab === "my-claims" && (
-        <div className="space-y-4">
-          {claimsLoading && (
-            <div className="text-center py-20">
-              <p className="text-gray-400 font-medium">Loading your claims…</p>
-            </div>
-          )}
-          {!claimsLoading && claimsError && (
-            <div className="text-center py-20">
-              <p className="text-red-400 font-medium">{claimsError}</p>
-            </div>
-          )}
-          {!claimsLoading && !claimsError && myClaims.length === 0 && (
-            <div className="text-center py-20">
-              <p className="text-gray-400 font-medium">No claims submitted yet</p>
-            </div>
-          )}
-          {!claimsLoading && !claimsError && myClaims.map((claim) => (
-            <div key={claim._id} className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <div className="flex items-center gap-2">
-                       <h3 className="text-sm font-bold text-gray-900">
-                            {claim.itemId?.title || "Item"}
-                        </h3>
-            <span
-              className={`text-[10px] font-bold px-2 py-0.5 rounded-full capitalize
-              ${
-                claim.itemId?.type === "lost"
-                ? "bg-orange-100 text-orange-700"
-                : "bg-blue-100 text-blue-700"
-      }`}
-    >
-      {claim.itemId?.type}
-    </span>
-
-  </div>
-
-  <p className="text-xs text-gray-400 mt-1">
-    Claimed on{" "}
-    {new Date(
-      claim.createdAt
-    ).toLocaleDateString()}
-  </p>
-
-  <p className="text-xs text-gray-600 mt-2">
-    <span className="font-semibold">
-      Message:
-    </span>{" "}
-    {claim.message}
-  </p>
-
-</div>
-                <StatusBadge status={claim.status} />
-              </div>
-              {claim.adminNote && (
-                <div className="mt-4 flex items-start gap-2 p-3 rounded-xl bg-blue-50 border border-blue-100">
-                  <svg className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                      d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-                  </svg>
-                  <div>
-                    <p className="text-xs font-semibold text-blue-800 mb-0.5">Admin Note</p>
-                    <p className="text-xs text-blue-700">{claim.adminNote}</p>
                   </div>
-            ))}
+                ))}
           </div>
         </div>
       )}
 
-      {/* ── Action Modal (Claim / I Found This) ── */}
+      {/* ── Action Modal ── */}
       {actionModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
-            {/* Modal header — color differs by type */}
             <div className={`px-6 py-5 bg-gradient-to-r
-              ${isLostModal
-                ? "from-orange-700 to-orange-500"
-                : "from-blue-900 to-blue-700"}`}>
+              ${isLostModal ? "from-orange-700 to-orange-500" : "from-blue-900 to-blue-700"}`}>
               <h2 className="text-base font-bold text-white">
                 {isLostModal ? "I Found This Item" : "Claim Item"}
               </h2>
