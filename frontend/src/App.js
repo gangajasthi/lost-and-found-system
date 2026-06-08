@@ -2,7 +2,9 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import Home from "./pages/Home";
 import Login from "./pages/Login";
+import VisitorLogin from "./pages/VisitorLogin";
 import Register from "./pages/Register";
+import VisitorRegister from "./pages/VisitorRegister";
 import AdminLogin from "./pages/AdminLogin";
 import UserDashboard from "./pages/UserDashboard";
 import ReportLost from "./pages/ReportLost";
@@ -28,7 +30,11 @@ function App() {
         {/* User Auth */}
         <Route path="/login" element={<Login />} />
 
+        <Route path="/visitor-login" element={<VisitorLogin />} />
+
         <Route path="/register" element={<Register />} />
+
+        <Route path="/visitor-register" element={<VisitorRegister />} />
 
         {/* User Dashboard */}
         <Route path="/dashboard" element={<UserDashboard />} />

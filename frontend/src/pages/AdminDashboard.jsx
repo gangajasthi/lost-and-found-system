@@ -834,9 +834,9 @@ const pendingFound =
           <span className="bg-green-100 text-green-700 px-5 py-2 rounded-full font-bold">
             Similarity Score:{" "}
             {Math.round(
-              (report.matchedItems?.[0]
-                ?.similarity || 0) * 100
-            )}
+            report.matchedItems?.[0]
+          ?.similarity || 0
+          )}
             %
           </span>
         </div>

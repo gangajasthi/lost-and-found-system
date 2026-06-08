@@ -72,7 +72,7 @@ const Login = () => {
     "/auth/login",
     {
         ...formData,
-        role: "adityan"
+        role: "visitor"
     }
 );
 
@@ -132,7 +132,7 @@ const Login = () => {
                     />
 
                     <h1 className="text-5xl font-extrabold leading-tight">
-                        Adityan Login
+                        Visitor Login
                     </h1>
 
                     <p className="mt-6 text-lg text-blue-100 leading-8">
@@ -164,7 +164,7 @@ const Login = () => {
                         <div>
 
                             <label className="block mb-2 font-medium text-gray-700">
-                                Aditya University Email
+                                Email Address
                             </label>
 
                             <input
@@ -241,12 +241,18 @@ const Login = () => {
 
                         Don’t have an account?
 
-                        <Link
+                        {/* <Link
                             to="/register"
                             className="text-[#FF6F00] font-semibold ml-2"
                         >
                             Register
-                        </Link>
+                        </Link> */}
+                        <Link
+                            to="/visitor-register"
+                            className="text-[#FF6F00] font-semibold ml-2"
+                    >
+                     Register
+                    </Link>
 
                     </p>
 

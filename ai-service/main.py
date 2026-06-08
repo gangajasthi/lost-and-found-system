@@ -111,9 +111,27 @@ def image_similarity(data: ImageRequest):
         des2
     )
 
-    similarity_score = len(matches)
+    # similarity_score = len(matches)
+
+    # return {
+    #     "similarity":
+    #     similarity_score
+    # }
+
+    max_features = max(
+        len(kp1),
+        len(kp2)
+    )
+
+    similarity_score = (
+        len(matches) /
+        max_features
+    ) * 100
 
     return {
         "similarity":
-        similarity_score
+        round(
+            similarity_score,
+            2
+        )
     }

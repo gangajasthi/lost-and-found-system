@@ -131,16 +131,32 @@ exports.registerUser = async (req, res) => {
 
         console.log(req.body);
 
-        const { name, email, mobile, password } = req.body;
+        const { name, email, mobile, password, role} = req.body;
 
         // Check university email
-        if (!email.endsWith("@adityauniversity.in")) {
+        // if (!email.endsWith("@adityauniversity.in")) {
 
-            return res.status(400).json({
-                message: "Use university email only"
-            });
+        //     return res.status(400).json({
+        //         message: "Use university email only"
+        //     });
 
-        }
+        // }
+
+       if (role === "adityan" && !email.endsWith("@adityauniversity.in")) 
+        {
+        return res.status(400).json({
+        message: "Use university email only"
+    });
+}
+
+if (
+    role === "visitor" &&
+    email.endsWith("@adityauniversity.in")
+) {
+    return res.status(400).json({
+        message: "University emails are not allowed for visitors"
+    });
+}
 
         // Check existing user
         const existingUser = await User.findOne({ email });
@@ -161,8 +177,11 @@ exports.registerUser = async (req, res) => {
             name,
             email,
             mobile,
-            password: hashedPassword
+            password: hashedPassword,
+            role
         });
+        console.log("REQ BODY =", req.body);
+        console.log("ROLE =", role);
 
         res.status(201).json({
             message: "User Registered Successfully",
@@ -187,19 +206,35 @@ exports.loginUser = async (req, res) => {
 
     try {
 
-        const { email, password } = req.body;
-
+        const { email, password, role } = req.body;
         // Check user
         const user = await User.findOne({ email });
 
         if (!user) {
-
             return res.status(400).json({
-                message: "User not found"
-            });
+            message: "User not found"
+    });
+}
+        // Role validation
+        if (
+            role === "adityan" &&
+            user.role !== "adityan" &&
+            user.role !== "user"
+)           {
+            return res.status(400).json({
+            message: "Use the correct login portal"
+    });
+}
 
-        }
+        if (
+    role === "visitor" &&
+    user.role !== "visitor"
+) {
+    return res.status(400).json({
+        message: "Use the correct login portal"
+    });
 
+}
         // Compare password
         const isMatch = await bcrypt.compare(password, user.password);
 

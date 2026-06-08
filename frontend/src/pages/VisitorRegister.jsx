@@ -39,15 +39,14 @@ const Register = () => {
 
             const response = await API.post(
                 "/auth/register",
-                {
+             {
                     name: formData.name,
                     email: formData.email,
-                    mobile: formData.mobile,
+                     mobile: formData.mobile,
                     password: formData.password,
-                    role: "adityan"
-                }
-            );  
-
+                     role: "visitor"
+    }
+);
             alert(response.data.message);
 
             navigate("/login");
@@ -80,8 +79,12 @@ const Register = () => {
                         className="w-24 mb-8 bg-white p-2 rounded-xl"
                     />
 
+                    {/* <h1 className="text-5xl font-extrabold leading-tight">
+                        User Registration
+                    </h1> */}
+
                     <h1 className="text-5xl font-extrabold leading-tight">
-                        Adityan Registration
+                         Visitor Registration
                     </h1>
 
                     <p className="mt-6 text-lg text-blue-100 leading-8">
@@ -131,7 +134,7 @@ const Register = () => {
                         <div>
 
                             <label className="block mb-2 font-medium text-gray-700">
-                                Aditya University Email
+                                Email Address
                             </label>
 
                             <input
@@ -139,7 +142,8 @@ const Register = () => {
                                 name="email"
                                 value={formData.email}
                                 onChange={handleChange}
-                                placeholder="example@adityauniversity.in"
+                                //placeholder="example@adityauniversity.in"
+                                placeholder="example@gmail.com"
                                 className="w-full border border-gray-300 rounded-xl px-5 py-4 outline-none focus:border-[#0D47A1]"
                                 required
                             />

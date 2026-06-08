@@ -70,12 +70,28 @@ const Home = () => {
 
             <div className="mt-10 space-y-5">
 
-              {/* User Login */}
+              {/* User Login
               <Link
                 to="/login"
                 className="block bg-[#0D47A1] text-white text-center py-4 rounded-xl text-lg font-semibold hover:bg-[#1565C0] transition"
               >
                 User Login
+              </Link> */}
+              {/* Adityan Login */}
+              <Link
+                to="/login"
+                  className="block bg-[#0D47A1] text-white text-center py-4 rounded-xl text-lg font-semibold hover:bg-[#1565C0] transition"
+        >
+              Adityan Login
+              </Link>
+
+              {/* Visitor Login */}
+              <Link
+                //to="/login"
+                to="/visitor-login"
+                className="block bg-[#0D47A1] text-white text-center py-4 rounded-xl text-lg font-semibold hover:bg-[#1565C0] transition"
+            >
+                Visitor Login
               </Link>
 
               {/* Admin Login */}

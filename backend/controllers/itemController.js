@@ -152,12 +152,21 @@ exports.createItem = async (req, res) => {
                 imageSimilarity >= 30
             ) {
 
-                similarity =
-                    (
-                        textSimilarity +
-                        (imageSimilarity / 100)
-                    ) / 2;
+               similarity =
+                (
+                    (textSimilarity * 100) +
+                     imageSimilarity
+                ) / 2;
             }
+            console.log(
+                     "TEXT:",
+                     textSimilarity
+                    );
+
+            console.log(
+                     "IMAGE:",
+                    imageSimilarity
+            );
 
             console.log(
                 "FINAL SCORE:",
