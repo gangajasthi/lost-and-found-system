@@ -77,18 +77,41 @@ exports.approveItem = async (req, res) => {
             user.email
         );
 
-        await transporter.sendMail({
+//         await transporter.sendMail({
 
-            from:
-                process.env.EMAIL_USER,
+//             from:
+//                 process.env.EMAIL_USER,
 
-            to:
-                user.email,
+//             to:
+//                 user.email,
 
-            subject:
-                "Lost & Found Item Approved",
+//             subject:
+//                 "Lost & Found Item Approved",
 
-            text:
+//             text:
+// `Hello ${user.name},
+
+// Your ${item.type} item "${item.title}" has been approved by admin.
+
+// Please login and check your reports.
+
+// Thank you,
+// Lost & Found Team`
+//         });
+
+//         console.log(
+//             "EMAIL SENT SUCCESSFULLY"
+//         );
+
+transporter.sendMail({
+
+    from: process.env.EMAIL_USER,
+
+    to: user.email,
+
+    subject: "Lost & Found Item Approved",
+
+    text:
 `Hello ${user.name},
 
 Your ${item.type} item "${item.title}" has been approved by admin.
@@ -97,11 +120,19 @@ Please login and check your reports.
 
 Thank you,
 Lost & Found Team`
-        });
+})
+.then(() => {
 
-        console.log(
-            "EMAIL SENT SUCCESSFULLY"
-        );
+    console.log(
+        "EMAIL SENT SUCCESSFULLY"
+    );
+
+})
+.catch((err) => {
+
+    console.log(err);
+
+});
 
         res.status(200).json({
             message:

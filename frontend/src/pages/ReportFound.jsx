@@ -40,6 +40,12 @@ export default function ReportFound() {
 
   const [loading, setLoading] = useState(false);
 
+  const [placeImage, setPlaceImage] = useState(null);
+
+  const [latitude, setLatitude] = useState("");
+
+  const [longitude, setLongitude] = useState("");
+
   const [form, setForm] = useState({
     title: "",
     category: "",
@@ -58,6 +64,38 @@ export default function ReportFound() {
       ...f,
       [key]: e.target.value
     }));
+  
+  const getLocation = () => {
+
+  navigator.geolocation.getCurrentPosition(
+
+    (position) => {
+
+      setLatitude(
+        position.coords.latitude
+      );
+
+      setLongitude(
+        position.coords.longitude
+      );
+
+      alert(
+        "Location Captured Successfully"
+      );
+
+    },
+
+    () => {
+
+      alert(
+        "Unable to get location"
+      );
+
+    }
+
+  );
+
+};
 
 
   // const handleSubmit = async (e) => {
@@ -98,7 +136,20 @@ export default function ReportFound() {
         form.image
       );
     }
-
+    if (placeImage) {
+       formData.append(
+       "placeImage",
+       placeImage
+    );
+}
+    formData.append(
+     "latitude",
+      latitude
+);
+    formData.append(
+      "longitude",
+        longitude
+);
     await axios.post(
       "http://localhost:5000/api/items",
       formData
@@ -374,6 +425,31 @@ export default function ReportFound() {
             }
           />
 
+          <FileUpload
+            label="Place Image"
+            onChange={(file) =>
+            setPlaceImage(file)
+  }
+/>
+    <div>
+      <button
+        type="button"
+        onClick={getLocation}
+        className="px-4 py-2 rounded-xl bg-green-600 text-white"
+    >
+    📍 Get Current Location
+  </button>
+</div>
+{latitude && longitude && (
+  <div className="text-sm text-gray-600">
+    <p>
+      Latitude: {latitude}
+    </p>
+    <p>
+      Longitude: {longitude}
+    </p>
+  </div>
+)}
           <FIELD label="Additional Notes">
 
             <textarea
