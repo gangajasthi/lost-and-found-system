@@ -54,6 +54,21 @@ const itemSchema = new mongoose.Schema(
       default: "",
     },
 
+    placeImage: {
+    type: String,
+    default: "",
+    },
+
+    latitude: {
+    type: String,
+    default: "",
+    },
+
+    longitude: {
+    type: String,
+    default: "",
+  },
+
     adminTitle: {
       type: String,
       default: "",

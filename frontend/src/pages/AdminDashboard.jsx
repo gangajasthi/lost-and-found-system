@@ -266,8 +266,8 @@ function ViewReportModal({ report, onClose }) {
   if (!report) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl p-6 w-full max-w-lg relative">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+        <div className="bg-white rounded-2xl p-6 w-full max-w-lg relative max-h-[90vh] overflow-y-auto">
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-xl leading-none text-gray-400 hover:text-gray-800 transition-colors"
@@ -285,6 +285,14 @@ function ViewReportModal({ report, onClose }) {
           />
         )}
 
+        {report.placeImage && (
+  <img
+    src={`http://localhost:5000/uploads/${report.placeImage}`}
+    alt="place"
+    className="w-full h-52 object-cover rounded-xl mb-4"
+  />
+)}
+
         <div className="space-y-2 text-sm text-gray-700">
           <p>
             <span className="font-semibold text-gray-900">Title:</span>{" "}
@@ -294,10 +302,40 @@ function ViewReportModal({ report, onClose }) {
             <span className="font-semibold text-gray-900">Description:</span>{" "}
             {report.description}
           </p>
-          <p>
+          {/* <p>
             <span className="font-semibold text-gray-900">Location:</span>{" "}
             {report.location}
-          </p>
+          </p> */}
+            
+            <p>
+  <span className="font-semibold text-gray-900">Location:</span>{" "}
+  {report.location}
+</p>
+
+<p>
+  <span className="font-semibold text-gray-900">
+    Latitude:
+  </span>{" "}
+  {report.latitude}
+</p>
+
+<p>
+  <span className="font-semibold text-gray-900">
+    Longitude:
+  </span>{" "}
+  {report.longitude}
+</p>
+
+{report.latitude && report.longitude && (
+  <a
+    href={`https://www.google.com/maps?q=${report.latitude},${report.longitude}`}
+    target="_blank"
+    rel="noreferrer"
+    className="inline-block mt-2 px-3 py-2 bg-blue-600 text-white rounded-lg"
+  >
+    📍 Open In Google Maps
+  </a>
+)}
           <p>
             <span className="font-semibold text-gray-900">Category:</span>{" "}
             {report.category}
@@ -460,6 +498,7 @@ export default function AdminDashboard() {
   const [searchTerm, setSearchTerm] = useState("");
 
   const [claims, setClaims]                     = useState([]);
+  const [approving, setApproving] = useState(false);
   useEffect(() => {
     fetchReports();
     fetchClaims();
@@ -482,8 +521,15 @@ export default function AdminDashboard() {
   }
 };
 
+  // const pendingReports =
+  // reports.filter((r) => r.status !== "approved");
+
   const pendingReports =
-  reports.filter((r) => r.status !== "approved");
+  reports.filter(
+    (r) =>
+      r.status !== "approved" &&
+      r.status !== "rejected"
+  );
 
 const aiSuggestions =
   pendingReports.filter(
@@ -539,20 +585,23 @@ const pendingFound =
 
   try {
 
+    setApproving(true);
+
     await axios.put(
       `http://localhost:5000/api/admin/approve/${id}`
     );
 
-    fetchReports();
+    await fetchReports();
 
-    showFeedback(
-      "approved",
-      id
-    );
+    showFeedback("approved", id);
 
   } catch (error) {
 
     console.log(error);
+
+  } finally {
+
+    setApproving(false);
 
   }
 
@@ -560,7 +609,8 @@ const pendingFound =
 
   const handleReject = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/api/items/${id}`);
+      // await axios.delete(`http://localhost:5000/api/items/${id}`);
+      await axios.put(`http://localhost:5000/api/items/reject/${id}`);
       fetchReports();
       showFeedback("rejected", id);
     } catch (error) {
@@ -588,6 +638,13 @@ const pendingFound =
 
   return (
     <DashboardLayout isAdmin>
+    {approving && (
+  <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+    <div className="bg-white px-8 py-6 rounded-2xl shadow-xl text-lg font-bold">
+      Approving Item...
+    </div>
+  </div>
+)}
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-xl font-bold text-gray-900">Admin Dashboard</h1>

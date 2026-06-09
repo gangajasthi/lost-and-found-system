@@ -80,23 +80,45 @@ const axios = require("axios");
 exports.createItem = async (req, res) => {
     try {
         console.log(req.body);
-        console.log(req.file);
+        console.log(req.files);
 
+        // const newItem = await Item.create({
+        //     ...req.body,
+        //     userId: req.body.userId,
+        //     image: req.file
+        //         ? req.file.filename
+        //         : ""
+        // });
         const newItem = await Item.create({
-            ...req.body,
-            userId: req.body.userId,
-            image: req.file ? req.file.filename : ""
-        });
+    ...req.body,
 
-        const oppositeType = newItem.type === "lost" ? "found" : "lost";
+    userId: req.body.userId,
 
-        // Requirement 1: Only compare with pending (not approved/resolved) opposite type items
-        const items = await Item.find({
-            type: oppositeType,
-            resolved: { $ne: true },
-            approved: { $ne: true },
-            status: { $ne: "approved" }
-        });
+    image:
+        req.files?.image?.[0]?.filename || "",
+
+    placeImage:
+        req.files?.placeImage?.[0]?.filename || "",
+
+    latitude:
+        req.body.latitude || "",
+
+    longitude:
+        req.body.longitude || ""
+});
+
+const oppositeType =
+    newItem.type === "lost"
+        ? "found"
+        : "lost";
+
+const items = await Item.find({
+    type: oppositeType,
+    resolved: { $ne: true },
+    approved: { $ne: true },
+    status: { $ne: "approved" }
+});
+
 
         let bestMatch = null;
         let bestScore = 0;
@@ -488,6 +510,34 @@ exports.removeMatch = async (req, res) => {
 
         res.status(200).json({
             message: "Suggestion removed successfully"
+        });
+
+    } catch (error) {
+
+        res.status(500).json({
+            message: error.message
+        });
+
+    }
+
+};
+
+exports.rejectItem = async (req, res) => {
+
+    try {
+
+        const item =
+            await Item.findByIdAndUpdate(
+                req.params.id,
+                {
+                    status: "rejected"
+                },
+                { new: true }
+            );
+
+        res.status(200).json({
+            message: "Item Rejected",
+            item
         });
 
     } catch (error) {

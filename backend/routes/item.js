@@ -7,15 +7,24 @@ const {
   getSingleItem,
   updateItem,
   deleteItem,
-  removeMatch
+  removeMatch,
+  rejectItem
 } = require("../controllers/itemController");
 
 const upload = require("../middleware/upload");
 
 // CREATE ITEM
+// router.post(
+//   "/",
+//   upload.single("image"),
+//   createItem
+// );
 router.post(
   "/",
-  upload.single("image"),
+  upload.fields([
+    { name: "image", maxCount: 1 },
+    { name: "placeImage", maxCount: 1 }
+  ]),
   createItem
 );
 
@@ -39,5 +48,7 @@ router.put(
   "/remove-match/:id",
   removeMatch
 );
+
+router.put("/reject/:id",rejectItem);
 
 module.exports = router;
