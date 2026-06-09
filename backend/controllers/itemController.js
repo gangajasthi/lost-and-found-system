@@ -76,171 +76,131 @@ const axios = require("axios");
 
 
 // CREATE ITEM
+// CREATE ITEM
 exports.createItem = async (req, res) => {
-
     try {
-
         console.log(req.body);
         console.log(req.file);
 
         const newItem = await Item.create({
             ...req.body,
             userId: req.body.userId,
-            image: req.file
-                ? req.file.filename
-                : ""
+            image: req.file ? req.file.filename : ""
         });
 
-        const oppositeType =
-            newItem.type === "lost"
-                ? "found"
-                : "lost";
+        const oppositeType = newItem.type === "lost" ? "found" : "lost";
 
-        const items =
-            await Item.find({
-                type: oppositeType,
-                resolved: { $ne: true }
-            });
+        // Requirement 1: Only compare with pending (not approved/resolved) opposite type items
+        const items = await Item.find({
+            type: oppositeType,
+            resolved: { $ne: true },
+            approved: { $ne: true },
+            status: { $ne: "approved" }
+        });
 
         let bestMatch = null;
         let bestScore = 0;
 
         for (let item of items) {
 
-            const textResponse =
-                await axios.post(
-                    "http://127.0.0.1:8000/text-similarity",
-                    {
-                        text1:
-                            newItem.description,
+            // Requirement 2: Compare using BOTH title and description
+            const text1 = `${newItem.title} ${newItem.description}`;
+            const text2 = `${item.title} ${item.description}`;
 
-                        text2:
-                            item.description
-                    }
-                );
+            // Debug: current vs compared
+            console.log("─────────────────────────────────────");
+            console.log("Comparing:", newItem.title, "→", item.title);
 
-            const textSimilarity =
-                textResponse.data.similarity;
+            const textResponse = await axios.post(
+                "http://127.0.0.1:8000/text-similarity",
+                { text1, text2 }
+            );
+
+            const textSimilarity = textResponse.data.similarity;
+            const textScore = textSimilarity * 100; // convert to percentage
 
             let imageSimilarity = 0;
+            let finalScore = 0;
 
-            if (
-                newItem.image &&
-                item.image
-            ) {
-
-                const imageResponse =
-                    await axios.post(
+            // Requirement 3 & 4: Image similarity rules + score calculation
+            if (newItem.image && item.image) {
+                // Both have images → use text + image
+                try {
+                    const imageResponse = await axios.post(
                         "http://127.0.0.1:8000/image-similarity",
                         {
-                            image1:
-                                `../backend/uploads/${newItem.image}`,
-
-                            image2:
-                                `../backend/uploads/${item.image}`
+                            image1: `../backend/uploads/${newItem.image}`,
+                            image2: `../backend/uploads/${item.image}`
                         }
                     );
-
-                imageSimilarity =
-                    imageResponse.data.similarity;
+                    imageSimilarity = imageResponse.data.similarity;
+                    // Requirement 4: finalScore = (textScore + imageScore) / 2
+                    finalScore = (textScore + imageSimilarity) / 2;
+                } catch (imgErr) {
+                    console.warn("Image similarity failed, falling back to text only:", imgErr.message);
+                    // Fallback to text only if image call fails
+                    finalScore = textScore;
+                }
+            } else {
+                // One or both images missing → text only (Req 3: never reject for missing image)
+                finalScore = textScore;
             }
 
-            let similarity = 0;
+            // Clamp finalScore to 0–100 range (Requirement 4)
+            finalScore = Math.min(100, Math.max(0, finalScore));
 
-            if (
-                textSimilarity >= 0.50 &&
-                imageSimilarity >= 30
-            ) {
+            // Requirement 7: Debug logs
+            console.log("  Current item  :", newItem.title);
+            console.log("  Compared item :", item.title);
+            console.log("  Text similarity  :", textSimilarity.toFixed(4));
+            console.log("  Image similarity :", imageSimilarity.toFixed(4));
+            console.log("  Final score      :", finalScore.toFixed(2));
 
-               similarity =
-                (
-                    (textSimilarity * 100) +
-                     imageSimilarity
-                ) / 2;
-            }
-            console.log(
-                     "TEXT:",
-                     textSimilarity
-                    );
-
-            console.log(
-                     "IMAGE:",
-                    imageSimilarity
-            );
-
-            console.log(
-                "FINAL SCORE:",
-                similarity
-            );
-
-            if (
-                similarity >= 0.30 &&
-                similarity > bestScore
-            ) {
-
-                bestScore =
-                    similarity;
-
-                bestMatch =
-                    item;
+            // Requirement 5 & 6: Threshold >= 30, keep only best match
+            if (finalScore >= 30 && finalScore > bestScore) {
+                bestScore = finalScore;
+                bestMatch = item;
             }
         }
 
+        // Requirement 7: Print best match summary
+        console.log("═════════════════════════════════════");
+        console.log("BEST MATCH :", bestMatch ? bestMatch.title : "None");
+        console.log("BEST SCORE :", bestScore.toFixed(2));
+        console.log("═════════════════════════════════════");
+
+        // Requirement 6: Save only the best match
         let matchedItems = [];
 
         if (bestMatch) {
-
             matchedItems.push({
-                item:
-                    bestMatch,
-
-                similarity:
-                    bestScore
+                item: bestMatch,
+                similarity: bestScore
             });
-
         }
 
-        const validMatches =
-            matchedItems.filter(
-                (match) =>
-                    match.item &&
-                    match.item._id
-            );
+        const validMatches = matchedItems.filter(
+            (match) => match.item && match.item._id
+        );
 
-        newItem.matchedItems =
-            validMatches.map(
-                (match) => ({
-                    itemId:
-                        match.item._id,
-
-                    similarity:
-                        match.similarity
-                })
-            );
+        newItem.matchedItems = validMatches.map((match) => ({
+            itemId: match.item._id,
+            similarity: match.similarity
+        }));
 
         await newItem.save();
 
         res.status(201).json({
-
-            message:
-                "Item Posted Successfully",
-
+            message: "Item Posted Successfully",
             newItem,
             matchedItems
-
         });
 
     } catch (error) {
-
         res.status(500).json({
-
-            message:
-                error.message
-
+            message: error.message
         });
-
     }
-
 };
 
 // GET ALL ITEMS
@@ -494,6 +454,40 @@ exports.deleteItem = async (req, res) => {
         res.status(200).json({
             message:
                 "Item Deleted Successfully"
+        });
+
+    } catch (error) {
+
+        res.status(500).json({
+            message: error.message
+        });
+
+    }
+
+};
+
+exports.removeMatch = async (req, res) => {
+
+    try {
+
+        const item = await Item.findById(
+            req.params.id
+        );
+
+        if (!item) {
+
+            return res.status(404).json({
+                message: "Item not found"
+            });
+
+        }
+
+        item.matchedItems = [];
+
+        await item.save();
+
+        res.status(200).json({
+            message: "Suggestion removed successfully"
         });
 
     } catch (error) {

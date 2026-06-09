@@ -6,7 +6,8 @@ const {
   getAllItems,
   getSingleItem,
   updateItem,
-  deleteItem
+  deleteItem,
+  removeMatch
 } = require("../controllers/itemController");
 
 const upload = require("../middleware/upload");
@@ -33,5 +34,10 @@ router.put(
 
 // DELETE ITEM
 router.delete("/:id", deleteItem);
+
+router.put(
+  "/remove-match/:id",
+  removeMatch
+);
 
 module.exports = router;
