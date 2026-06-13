@@ -607,17 +607,6 @@ const pendingFound =
 
 };
 
-  const handleReject = async (id) => {
-    try {
-      // await axios.delete(`http://localhost:5000/api/items/${id}`);
-      await axios.put(`http://localhost:5000/api/items/reject/${id}`);
-      fetchReports();
-      showFeedback("rejected", id);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
   const handleDeleteSuggestion = async (id) => {
     try {
         await axios.put(
@@ -924,15 +913,6 @@ const pendingFound =
           </button>
 
           <button
-            onClick={() =>
-              handleReject(report._id)
-            }
-            className="px-5 py-3 rounded-xl border border-red-200 bg-red-50 text-red-600 font-bold"
-          >
-            Reject
-          </button>
-
-          <button
             onClick={() => handleDeleteSuggestion(report._id)}
             className="px-4 py-2 rounded-lg border border-orange-200 text-orange-600 text-xs font-bold hover:bg-orange-50 transition-colors"
           >
@@ -967,7 +947,6 @@ const pendingFound =
             items={pendingLost}
             emptyText="No lost items pending approval"
             onApprove={handleApproveLost}
-            onReject={handleReject}
             onOpenFoundModal={setFoundModalReport}
             onView={setSelectedReport}
           />
@@ -978,7 +957,6 @@ const pendingFound =
             items={pendingFound}
             emptyText="No found items pending approval"
             onApprove={handleApproveLost}
-            onReject={handleReject}
             onOpenFoundModal={setFoundModalReport}
             onView={setSelectedReport}
           />
