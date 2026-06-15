@@ -84,179 +84,6 @@ const ACT_COLORS = {
   purple:  "bg-purple-100 text-purple-700",
 };
 
-// ── Found-Item Approval Modal ────────────────────────────────────
-function FoundApprovalModal({ report, onClose, onApproved }) {
-  const [adminTitle, setAdminTitle]             = useState("");
-  const [adminDescription, setAdminDescription] = useState("");
-  const [imageChoice, setImageChoice]           = useState("none");
-  const [imageFile, setImageFile]               = useState(null);
-  const [submitting, setSubmitting]             = useState(false);
-  const [error, setError]                       = useState("");
-  //const [claims, setClaims]                     = useState([]);
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!adminTitle.trim()) { setError("Public title is required."); return; }
-    if (!adminDescription.trim()) { setError("Public description is required."); return; }
-
-    try {
-      setSubmitting(true);
-      setError("");
-
-      const formData = new FormData();
-      formData.append("adminTitle",       adminTitle.trim());
-      formData.append("adminDescription", adminDescription.trim());
-
-      if (imageChoice === "upload" && imageFile) {
-        formData.append("image", imageFile);
-      } else if (imageChoice === "existing") {
-        formData.append("useExistingImage", "true");
-      }
-
-      await axios.put(
-        `http://localhost:5000/api/items/${report._id}`,
-        formData,
-        { headers: { "Content-Type": "multipart/form-data" } }
-      );
-
-      onApproved();
-      onClose();
-    } catch (err) {
-      setError("Failed to approve item. Please try again.");
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-        <div className="bg-gradient-to-r from-teal-700 to-teal-500 px-6 py-5">
-          <h2 className="text-base font-bold text-white">Approve Found Item</h2>
-          <p className="text-xs text-teal-100 mt-1 truncate">Original: {report.title}</p>
-        </div>
-
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          <div className="p-3 rounded-xl bg-amber-50 border border-amber-200">
-            <p className="text-xs text-amber-700">
-              The public details below will be shown to all users instead of the finder's original
-              report. Do <strong>not</strong> reveal the finder's identity.
-            </p>
-          </div>
-
-          {report.image && (
-            <div>
-              <p className="text-xs font-semibold text-gray-500 mb-1">Original finder's image (private)</p>
-              <img
-                src={`http://localhost:5000/uploads/${report.image}`}
-                alt="original"
-                className="h-24 w-auto rounded-xl border border-gray-200 object-contain bg-gray-50"
-              />
-            </div>
-          )}
-
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">
-              Public Title <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              value={adminTitle}
-              onChange={(e) => setAdminTitle(e.target.value)}
-              placeholder="e.g., Black Wallet Found Near Library"
-              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">
-              Public Description <span className="text-red-500">*</span>
-            </label>
-            <textarea
-              value={adminDescription}
-              onChange={(e) => setAdminDescription(e.target.value)}
-              placeholder="Describe the item without revealing finder details..."
-              rows={3}
-              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Public Image (optional)
-            </label>
-            <div className="flex flex-col gap-2">
-              <label className="flex items-center gap-3 cursor-pointer">
-                <input
-                  type="radio"
-                  name="imageChoice"
-                  value="upload"
-                  checked={imageChoice === "upload"}
-                  onChange={() => setImageChoice("upload")}
-                  className="accent-teal-600"
-                />
-                <span className="text-sm text-gray-700">Upload a different image</span>
-              </label>
-              {imageChoice === "upload" && (
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => setImageFile(e.target.files[0] || null)}
-                  className="ml-6 text-xs text-gray-600"
-                />
-              )}
-
-              {report.image && (
-                <label className="flex items-center gap-3 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="imageChoice"
-                    value="existing"
-                    checked={imageChoice === "existing"}
-                    onChange={() => setImageChoice("existing")}
-                    className="accent-teal-600"
-                  />
-                  <span className="text-sm text-gray-700">Use original image</span>
-                </label>
-              )}
-
-              <label className="flex items-center gap-3 cursor-pointer">
-                <input
-                  type="radio"
-                  name="imageChoice"
-                  value="none"
-                  checked={imageChoice === "none"}
-                  onChange={() => setImageChoice("none")}
-                  className="accent-teal-600"
-                />
-                <span className="text-sm text-gray-700">No image (text only)</span>
-              </label>
-            </div>
-          </div>
-
-          {error && <p className="text-xs text-red-600 font-medium">{error}</p>}
-
-          <div className="flex gap-3 pt-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 py-3 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={submitting}
-              className="flex-1 py-3 rounded-xl bg-teal-600 text-white text-sm font-bold hover:bg-teal-700 transition-colors disabled:opacity-60"
-            >
-              {submitting ? "Approving..." : "Approve & Publish"}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-}
 
 // ── View Report Modal ────────────────────────────────────────────
 // Standalone component — owns no state of its own.
@@ -407,7 +234,7 @@ function ReportRow({ report, onApprove, onReject, onOpenFoundModal, onView }) {
 
       <div className="flex gap-2 mt-4 pl-14">
         <button
-          onClick={() => (isFound ? onOpenFoundModal(report) : onApprove(report._id))}
+          onClick={() => onApprove(report._id)} 
           className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-500 text-white text-xs font-bold hover:bg-emerald-600 transition-colors shadow-sm"
         >
           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -417,7 +244,7 @@ function ReportRow({ report, onApprove, onReject, onOpenFoundModal, onView }) {
         </button>
 
         <button
-          onClick={() => onReject(report._id)}
+          onClick={() => onReject(report)}
           className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-red-50 text-red-600 border border-red-200 text-xs font-bold hover:bg-red-100 transition-colors"
         >
           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -493,9 +320,10 @@ export default function AdminDashboard() {
   const navigate                                = useNavigate();
   const [reports, setReports]                   = useState([]);
   const [actionFeedback, setActionFeedback]     = useState(null);
-  const [foundModalReport, setFoundModalReport] = useState(null);
   const [selectedReport, setSelectedReport]     = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+const [rejectModal, setRejectModal] = useState(null);
+const [rejectReason, setRejectReason] = useState("");
 
   const [claims, setClaims]                     = useState([]);
   const [approving, setApproving] = useState(false);
@@ -581,6 +409,10 @@ const pendingFound =
   //   }
   // };
 
+  const openRejectModal = (report) => {
+  setRejectModal(report);
+};
+
   const handleApproveLost = async (id) => {
 
   try {
@@ -605,6 +437,27 @@ const pendingFound =
 
   }
 
+};
+
+const handleReject = async (id, reason) => {
+  try {
+    await axios.put(
+      `http://localhost:5000/api/items/reject/${id}`,
+      {
+        rejectionReason: reason,
+      }
+    );
+
+    await fetchReports();
+
+    setRejectModal(null);
+    setRejectReason("");
+
+    showFeedback("rejected", id);
+
+  } catch (error) {
+    console.log(error);
+  }
 };
 
   const handleDeleteSuggestion = async (id) => {
@@ -902,11 +755,7 @@ const pendingFound =
 
         <div className="flex gap-3 mt-5">
           <button
-            onClick={() =>
-              report.type === "found"
-                ? setFoundModalReport(report)
-                : handleApproveLost(report._id)
-            }
+            onClick={() => handleApproveLost(report._id)}
             className="px-5 py-3 rounded-xl bg-emerald-500 text-white font-bold hover:bg-emerald-600"
           >
             Approve Match
@@ -947,7 +796,8 @@ const pendingFound =
             items={pendingLost}
             emptyText="No lost items pending approval"
             onApprove={handleApproveLost}
-            onOpenFoundModal={setFoundModalReport}
+            onReject={openRejectModal}
+            onOpenFoundModal={null}
             onView={setSelectedReport}
           />
 
@@ -957,9 +807,10 @@ const pendingFound =
             items={pendingFound}
             emptyText="No found items pending approval"
             onApprove={handleApproveLost}
-            onOpenFoundModal={setFoundModalReport}
+            onReject={openRejectModal}
+            onOpenFoundModal={null}
             onView={setSelectedReport}
-          />
+/>
 
           {/* Quick Stats Row */}
           <div className="grid grid-cols-3 gap-3">
@@ -1025,17 +876,6 @@ const pendingFound =
         </div>
       </div>
 
-      {/* Found Item Approval Modal */}
-      {foundModalReport && (
-        <FoundApprovalModal
-          report={foundModalReport}
-          onClose={() => setFoundModalReport(null)}
-          onApproved={() => {
-            fetchReports();
-            showFeedback("approved", foundModalReport._id);
-          }}
-        />
-      )}
 
       {/*
         View Report Modal.
@@ -1046,6 +886,52 @@ const pendingFound =
         report={selectedReport}
         onClose={() => setSelectedReport(null)}
       />
+
+      {rejectModal && (
+  <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div className="bg-white rounded-2xl p-6 w-full max-w-md">
+      
+      <h2 className="text-lg font-bold mb-4">
+        Reject Item
+      </h2>
+
+      <textarea
+        value={rejectReason}
+        onChange={(e) => setRejectReason(e.target.value)}
+        placeholder="Enter rejection reason..."
+        className="w-full border rounded-xl p-3 min-h-[120px]"
+      />
+
+      <div className="flex justify-end gap-2 mt-4">
+        <button
+          onClick={() => {
+            setRejectModal(null);
+            setRejectReason("");
+          }}
+          className="px-4 py-2 border rounded-xl hover:bg-gray-100 transition-all duration-200"
+        >
+          Cancel
+        </button>
+
+        <button
+          onClick={() =>
+            handleReject(
+              rejectModal._id,
+              rejectReason
+            )
+          }
+          className="px-4 py-2 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-all duration-200"
+        >
+          Submit
+        </button>
+      </div>
+
+    </div>
+  </div>
+)}
+      
     </DashboardLayout>
   );
 }
+
+

@@ -321,11 +321,17 @@ const fetchReports = async () => {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3">
-                  <StatusBadge
-                    status={report.status}
-                  />
-                </div>
+                <div className="flex flex-col items-end gap-1">
+                    <StatusBadge
+                      status={report.status}
+                    />
+
+                    {report.status === "rejected" && report.rejectionReason && (
+                      <p className="text-xs text-red-600 font-medium">
+                        Reason: {report.rejectionReason}
+                      </p>
+                    )}
+                  </div>
               </div>
 
               {/* Expanded Details */}
@@ -335,6 +341,17 @@ const fetchReports = async () => {
                   <p className="text-sm text-gray-600 mb-4">
                     {report.description}
                   </p>
+
+                   {report.status === "rejected" && report.rejectionReason && (
+                    <div className="mt-3 p-3 rounded-xl bg-red-50 border border-red-200">
+                      <p className="text-xs font-semibold text-red-700">
+                        Rejection Reason
+                      </p>
+                      <p className="text-sm text-red-600 mt-1">
+                        {report.rejectionReason}
+                      </p>
+                    </div>
+                  )}
 
                 </div>
               )}

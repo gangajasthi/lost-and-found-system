@@ -74,8 +74,11 @@ exports.updateClaimStatus =
         await Claim.findByIdAndUpdate(
           req.params.id,
           {
-            status:
-              req.body.status
+              status:
+    req.body.status,
+
+  rejectionReason:
+    req.body.rejectionReason || ""
           },
           {
             new: true

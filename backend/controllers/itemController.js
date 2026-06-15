@@ -115,10 +115,10 @@ const oppositeType =
 const items = await Item.find({
     type: oppositeType,
     resolved: { $ne: true },
-    approved: { $ne: true },
-    status: { $ne: "approved" }
+    status: {
+        $nin: ["approved", "rejected"]
+    }
 });
-
 
         let bestMatch = null;
         let bestScore = 0;
@@ -353,21 +353,7 @@ exports.updateItem = async (req, res) => {
         }
 
         // FOUND ITEM
-        let adminImage = "";
 
-        if (req.file) {
-
-            adminImage =
-                req.file.filename;
-
-        } else if (
-            req.body.useExistingImage === "true"
-        ) {
-
-            adminImage =
-                existingItem.image || "";
-
-        }
 
         let resolvedWith = null;
 
@@ -411,15 +397,7 @@ exports.updateItem = async (req, res) => {
                     status: "approved",
                     approved: true,
                     resolved: true,
-                    resolvedWith,
-
-                    adminTitle:
-                        req.body.adminTitle || "",
-
-                    adminDescription:
-                        req.body.adminDescription || "",
-
-                    adminImage
+                    resolvedWith
                 },
                 { new: true }
             );
@@ -438,6 +416,36 @@ exports.updateItem = async (req, res) => {
 
     }
 
+};
+
+
+//Reject Item
+exports.rejectItem = async (req, res) => {
+  try {
+
+    const { rejectionReason } = req.body;
+
+    const item = await Item.findByIdAndUpdate(
+      req.params.id,
+      {
+        status: "rejected",
+        rejectionReason
+      },
+      { new: true }
+    );
+
+    res.status(200).json({
+      message: "Item rejected successfully",
+      item
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+      message: error.message
+    });
+
+  }
 };
 
 // DELETE ITEM
@@ -522,30 +530,3 @@ exports.removeMatch = async (req, res) => {
 
 };
 
-exports.rejectItem = async (req, res) => {
-
-    try {
-
-        const item =
-            await Item.findByIdAndUpdate(
-                req.params.id,
-                {
-                    status: "rejected"
-                },
-                { new: true }
-            );
-
-        res.status(200).json({
-            message: "Item Rejected",
-            item
-        });
-
-    } catch (error) {
-
-        res.status(500).json({
-            message: error.message
-        });
-
-    }
-
-};

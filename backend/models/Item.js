@@ -86,7 +86,12 @@ const itemSchema = new mongoose.Schema(
     notification: {
       type: String,
       default: ""
-},
+    },
+
+    rejectionReason: {
+      type: String,
+      default: ""
+    },
     matchedItems: [
   {
     itemId: {

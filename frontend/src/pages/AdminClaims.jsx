@@ -45,6 +45,12 @@ import StatusBadge from "../components/StatusBadge";
 // };
 export default function AdminClaims() {
 
+  const [rejectModal, setRejectModal] =
+  useState(null);
+
+const [rejectReason, setRejectReason] =
+  useState("");
+
   const [claims, setClaims] =
     useState([]);
 
@@ -103,6 +109,31 @@ export default function AdminClaims() {
       }
 
     };
+
+    const handleRejectClaim = async () => {
+
+  try {
+
+    await axios.put(
+      `http://localhost:5000/api/claims/${rejectModal._id}`,
+      {
+        status: "rejected",
+        rejectionReason: rejectReason
+      }
+    );
+
+    fetchClaims();
+
+    setRejectModal(null);
+    setRejectReason("");
+
+  } catch (error) {
+
+    console.log(error);
+
+  }
+
+};
   return (
 
     <DashboardLayout isAdmin>
@@ -175,17 +206,14 @@ export default function AdminClaims() {
         className="px-3 py-1 rounded-lg bg-green-600 text-white text-xs font-semibold hover:bg-green-700">
         Approve
       </button>
-      <button
-        onClick={() =>
-          handleClaimStatus(
-            claim._id,
-            "rejected"
-          )
-        }
-        className="px-3 py-1 rounded-lg bg-red-600 text-white text-xs font-semibold hover:bg-red-700"
-      >
-        Reject
-      </button>
+     <button
+  onClick={() =>
+    setRejectModal(claim)
+  }
+  className="px-3 py-1 rounded-lg bg-red-600 text-white text-xs font-semibold hover:bg-red-700"
+>
+  Reject
+</button>
 
     </div>
 
@@ -200,6 +228,51 @@ export default function AdminClaims() {
         ))}
 
       </div>
+
+
+      {rejectModal && (
+  <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+
+    <div className="bg-white rounded-2xl p-6 w-full max-w-md">
+
+      <h2 className="text-lg font-bold mb-4">
+        Reject Claim
+      </h2>
+
+      <textarea
+        value={rejectReason}
+        onChange={(e) =>
+          setRejectReason(e.target.value)
+        }
+        placeholder="Enter rejection reason..."
+        className="w-full border rounded-xl p-3 min-h-[120px]"
+      />
+
+      <div className="flex justify-end gap-2 mt-4">
+
+        <button
+          onClick={() => {
+            setRejectModal(null);
+            setRejectReason("");
+          }}
+          className="px-4 py-2 border rounded-xl hover:bg-gray-100 transition"
+        >
+          Cancel
+        </button>
+
+        <button
+          onClick={handleRejectClaim}
+          className="px-4 py-2 bg-red-500 text-white rounded-xl hover:bg-red-600 transition"
+        >
+          Submit
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+)}
 
     </DashboardLayout>
   );

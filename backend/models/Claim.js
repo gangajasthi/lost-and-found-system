@@ -29,6 +29,16 @@ const claimSchema = new mongoose.Schema({
         required: true
     },
 
+    adminNote: {
+        type: String,
+        default: ""
+    },
+
+    rejectionReason: {
+    type: String,
+    default: ""
+},
+
     status: {
         type: String,
         default: "pending"

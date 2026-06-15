@@ -44,11 +44,17 @@ router.put(
 // DELETE ITEM
 router.delete("/:id", deleteItem);
 
+
+router.put(
+  "/reject/:id",
+  rejectItem
+);
+
 router.put(
   "/remove-match/:id",
   removeMatch
 );
 
-router.put("/reject/:id",rejectItem);
+
 
 module.exports = router;
