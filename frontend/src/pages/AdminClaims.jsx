@@ -105,9 +105,12 @@ export default function AdminClaims() {
     };
   return (
 
-    <DashboardLayout isAdmin>
-
-      <div className="mb-6">
+   <DashboardLayout isAdmin>
+{/* //       <div className="bg-red-500 text-white p-5">
+//   TEST
+// </div> */}
+      {/* <div className="mb-6"> */}
+      <div className="container mx-auto">
 
         <h1 className="text-xl font-bold text-gray-900">
           Claims
@@ -153,6 +156,35 @@ export default function AdminClaims() {
                   {" "}
                   {claim.message}
                 </p>
+
+                {claim.answers?.length > 0 && (
+  <div className="mt-4 p-3 rounded-xl bg-blue-50 border border-blue-200">
+
+    <h4 className="text-sm font-bold text-blue-900 mb-3">
+      Claimant Answers
+    </h4>
+
+    <div className="space-y-2">
+
+      {claim.answers.map((ans, index) => (
+        <div
+          key={index}
+          className="bg-white rounded-lg p-2 border border-blue-100"
+        >
+          <p className="text-xs font-semibold text-gray-700">
+            Q: {ans.question}
+          </p>
+
+          <p className="text-xs text-blue-700 mt-1">
+            A: {ans.answer}
+          </p>
+        </div>
+      ))}
+
+    </div>
+
+  </div>
+)}
 
               </div>
 

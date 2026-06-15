@@ -1,88 +1,88 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+// import { useNavigate } from "react-router-dom";
 import DashboardLayout from "../components/DashboardLayout";
 import StatusBadge from "../components/StatusBadge";
 
 // ── Analytics Data ──────────────────────────────────────────────
-const ANALYTICS = [
-  {
-    label: "Total Reports",
-    value: "148",
-    change: "+12 this week",
-    positive: true,
-    color: "blue",
-    icon: (
-      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-          d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-      </svg>
-    ),
-  },
-  {
-    label: "Pending Approvals",
-    value: "5",
-    change: "Needs attention",
-    positive: false,
-    color: "amber",
-    icon: (
-      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
-    ),
-  },
-  {
-    label: "Items Resolved",
-    value: "93",
-    change: "+8 this month",
-    positive: true,
-    color: "emerald",
-    icon: (
-      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-          d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
-    ),
-  },
-  {
-    label: "Active Claims",
-    value: "17",
-    change: "+3 today",
-    positive: true,
-    color: "purple",
-    icon: (
-      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-          d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-      </svg>
-    ),
-  },
-];
+// const ANALYTICS = [
+//   {
+//     label: "Total Reports",
+//     value: "148",
+//     change: "+12 this week",
+//     positive: true,
+//     color: "blue",
+//     icon: (
+//       <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+//         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+//           d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+//       </svg>
+//     ),
+//   },
+//   {
+//     label: "Pending Approvals",
+//     value: "5",
+//     change: "Needs attention",
+//     positive: false,
+//     color: "amber",
+//     icon: (
+//       <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+//         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+//           d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+//       </svg>
+//     ),
+//   },
+//   {
+//     label: "Items Resolved",
+//     value: "93",
+//     change: "+8 this month",
+//     positive: true,
+//     color: "emerald",
+//     icon: (
+//       <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+//         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+//           d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+//       </svg>
+//     ),
+//   },
+//   {
+//     label: "Active Claims",
+//     value: "17",
+//     change: "+3 today",
+//     positive: true,
+//     color: "purple",
+//     icon: (
+//       <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+//         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+//           d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+//       </svg>
+//     ),
+//   },
+// ];
 
-const COLOR_MAP = {
-  blue:    { bg: "bg-blue-50",    icon: "bg-blue-100 text-blue-600",       ring: "ring-blue-200"    },
-  amber:   { bg: "bg-amber-50",   icon: "bg-amber-100 text-amber-600",     ring: "ring-amber-200"   },
-  emerald: { bg: "bg-emerald-50", icon: "bg-emerald-100 text-emerald-600", ring: "ring-emerald-200" },
-  purple:  { bg: "bg-purple-50",  icon: "bg-purple-100 text-purple-600",   ring: "ring-purple-200"  },
-};
+// const COLOR_MAP = {
+//   blue:    { bg: "bg-blue-50",    icon: "bg-blue-100 text-blue-600",       ring: "ring-blue-200"    },
+//   amber:   { bg: "bg-amber-50",   icon: "bg-amber-100 text-amber-600",     ring: "ring-amber-200"   },
+//   emerald: { bg: "bg-emerald-50", icon: "bg-emerald-100 text-emerald-600", ring: "ring-emerald-200" },
+//   purple:  { bg: "bg-purple-50",  icon: "bg-purple-100 text-purple-600",   ring: "ring-purple-200"  },
+// };
 
 // ── Recent Activity ──────────────────────────────────────────────
-const RECENT_ACTIVITY = [
-  { id: 1, action: "approved",       item: "Student ID Card",         by: "Admin",  time: "2 hrs ago",  color: "emerald" },
-  { id: 2, action: "rejected",       item: "Duplicate wallet report", by: "Admin",  time: "4 hrs ago",  color: "red"     },
-  { id: 3, action: "claim verified", item: "Laptop Charger",          by: "Admin",  time: "Yesterday",  color: "blue"    },
-  { id: 4, action: "new report",     item: "Blue Water Bottle",       by: "System", time: "Yesterday",  color: "amber"   },
-  { id: 5, action: "resolved",       item: "Silver Bracelet",         by: "Admin",  time: "2 days ago", color: "purple"  },
-];
+// const RECENT_ACTIVITY = [
+//   { id: 1, action: "approved",       item: "Student ID Card",         by: "Admin",  time: "2 hrs ago",  color: "emerald" },
+//   { id: 2, action: "rejected",       item: "Duplicate wallet report", by: "Admin",  time: "4 hrs ago",  color: "red"     },
+//   { id: 3, action: "claim verified", item: "Laptop Charger",          by: "Admin",  time: "Yesterday",  color: "blue"    },
+//   { id: 4, action: "new report",     item: "Blue Water Bottle",       by: "System", time: "Yesterday",  color: "amber"   },
+//   { id: 5, action: "resolved",       item: "Silver Bracelet",         by: "Admin",  time: "2 days ago", color: "purple"  },
+// ];
 
-const ACT_COLORS = {
-  emerald: "bg-emerald-100 text-emerald-700",
-  red:     "bg-red-100 text-red-700",
-  blue:    "bg-blue-100 text-blue-700",
-  amber:   "bg-amber-100 text-amber-700",
-  purple:  "bg-purple-100 text-purple-700",
-};
+// const ACT_COLORS = {
+//   emerald: "bg-emerald-100 text-emerald-700",
+//   red:     "bg-red-100 text-red-700",
+//   blue:    "bg-blue-100 text-blue-700",
+//   amber:   "bg-amber-100 text-amber-700",
+//   purple:  "bg-purple-100 text-purple-700",
+// };
 
 // ── Found-Item Approval Modal ────────────────────────────────────
 function FoundApprovalModal({ report, onClose, onApproved }) {
@@ -490,18 +490,18 @@ function PendingSection({ title, badgeColor, items, emptyText, onApprove, onReje
 
 // ── Admin Dashboard (root) ───────────────────────────────────────
 export default function AdminDashboard() {
-  const navigate                                = useNavigate();
+  // const navigate                                = useNavigate();
   const [reports, setReports]                   = useState([]);
   const [actionFeedback, setActionFeedback]     = useState(null);
   const [foundModalReport, setFoundModalReport] = useState(null);
   const [selectedReport, setSelectedReport]     = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
 
-  const [claims, setClaims]                     = useState([]);
+  // const [claims, setClaims]                     = useState([]);
   const [approving, setApproving] = useState(false);
   useEffect(() => {
     fetchReports();
-    fetchClaims();
+    // fetchClaims();
   }, []);
 
   const fetchReports = async () => {
@@ -512,14 +512,14 @@ export default function AdminDashboard() {
       console.log(error);
     }
   };
-  const fetchClaims = async () => {
-  try {
-    const response = await axios.get("http://localhost:5000/api/claims");
-    setClaims(response.data);
-  } catch (error) {
-    console.log(error);
-  }
-};
+//   const fetchClaims = async () => {
+//   try {
+//     const response = await axios.get("http://localhost:5000/api/claims");
+//     setClaims(response.data);
+//   } catch (error) {
+//     console.log(error);
+//   }
+// };
 
   // const pendingReports =
   // reports.filter((r) => r.status !== "approved");
@@ -564,12 +564,12 @@ const pendingFound =
         )
   );
 
-  const totalReports  = reports.length;
-  const resolvedItems = reports.filter((r) => r.status === "approved").length;
-  const activeClaims  = 0;
-  const lostReports   = reports.filter((r) => r.type === "lost").length;
-  const foundReports  = reports.filter((r) => r.type === "found").length;
-  const recoveryRate  = totalReports > 0 ? Math.round((resolvedItems / totalReports) * 100) : 0;
+  // const totalReports  = reports.length;
+  //  const resolvedItems = reports.filter((r) => r.status === "approved").length;
+  // const activeClaims  = 0;
+  // const lostReports   = reports.filter((r) => r.type === "lost").length;
+  // const foundReports  = reports.filter((r) => r.type === "found").length;
+  // const recoveryRate  = totalReports > 0 ? Math.round((resolvedItems / totalReports) * 100) : 0;
 
   // const handleApproveLost = async (id) => {
   //   try {
@@ -636,9 +636,13 @@ const pendingFound =
 )}
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-xl font-bold text-gray-900">Admin Dashboard</h1>
+        {/* <h1 className="text-xl font-bold text-gray-900">Admin Dashboard</h1> */}
+        <h1 className="text-3xl font-bold text-gray-900">
+  Pending Items & AI Matches
+</h1>
         <p className="text-sm text-gray-500 mt-0.5">
-          Overview of Lost &amp; Found portal activity —{" "}
+          {/* Overview of Lost &amp; Found portal activity —{" "} */}
+          Review AI suggestions and approve pending reports
           <span className="font-medium text-blue-600">Aditya University</span>
         </p>
       </div>
@@ -674,7 +678,7 @@ const pendingFound =
         className="w-full md:w-96 px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
       />
     </div>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          {/* <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {ANALYTICS.map((stat) => {
           const c = COLOR_MAP[stat.color];
           const value =
@@ -698,7 +702,7 @@ const pendingFound =
             </div>
           );
         })}
-      </div>
+      </div> */}
 
 
       
@@ -738,10 +742,10 @@ const pendingFound =
 </div> */}
 
 {/* Approved + Rejected + Claims Cards */}
-<div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+{/* <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
 
   {/* Approved */}
-  <div
+  {/* <div
     onClick={() =>
       navigate("/approved-items")
     }
@@ -760,10 +764,10 @@ const pendingFound =
       View approved item details
     </p>
 
-  </div>
+  </div> */}
 
   {/* Rejected */}
-  <div
+  {/* <div
     onClick={() =>
       navigate("/rejected-items")
     }
@@ -788,12 +792,12 @@ const pendingFound =
 
     <p className="text-[11px] font-medium mt-1 text-red-600">
       View rejected item details
-    </p>
+    </p> */}
 
-  </div>
+  {/* </div> */}
 
   {/* Claims */}
-  <div
+  {/* <div
     onClick={() =>
       navigate("/admin-claims")
     }
@@ -814,13 +818,16 @@ const pendingFound =
 
   </div>
 
-</div>
+</div> */} 
 
       {/* Two-column layout */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+      {/* <div className="grid grid-cols-1 xl:grid-cols-3 gap-6"> */}
+      {/* <div className="space-y-6"></div> */}
         {/* Left: Pending sections (2/3 width) */}
-        <div className="xl:col-span-2 space-y-6">
-          <div className="rounded-3xl border border-gray-200 bg-white overflow-hidden shadow-sm">
+        {/* <div className="xl:col-span-2 space-y-6"> */}
+        {/* <div className="space-y-0"> */}
+          {/* <div className="rounded-3xl border border-gray-200 bg-white overflow-hidden shadow-sm"> */}
+          <div className="rounded-3xl border border-gray-200 bg-white overflow-hidden shadow-sm max-h-[700px] flex flex-col">
             <div className="px-7 py-5 border-b border-gray-100 flex items-center gap-3">
               <h2 className="text-lg font-bold text-gray-900">
                 🤖 AI Suggested Matches
@@ -831,7 +838,8 @@ const pendingFound =
               </span>
             </div>
 
-            <div className="divide-y divide-gray-100">
+            {/* <div className="divide-y divide-gray-100"> */}
+            <div className="divide-y divide-gray-100 overflow-y-auto">
               {aiSuggestions.length === 0 ? (
                 <div className="p-16 text-center text-gray-400">
                   No AI suggestions available
@@ -839,21 +847,25 @@ const pendingFound =
               ) : (
                 aiSuggestions.map((report) => (
   <div key={report._id} className="p-5">
-    <div className="rounded-3xl border border-blue-200 bg-blue-50 p-5">
+    {/* <div className="rounded-3xl border border-blue-200 bg-blue-50 p-5"> */}
+    <div className="rounded-2xl border border-blue-200 bg-blue-50 p-3">
 
-      <h3 className="text-xl font-bold text-blue-700 mb-5">
+      {/* <h3 className="text-xl font-bold text-blue-700 mb-5"> */}
+      <h3 className="text-lg font-bold text-blue-700 mb-3">
         🤖 AI Suggested Match
       </h3>
 
-      <div className="grid md:grid-cols-2 gap-4">
+      <div className="grid md:grid-cols-2 gap-3">
 
         {/* Current Item */}
-        <div className="bg-white rounded-2xl p-5 border border-gray-200">
+        {/* <div className="bg-white rounded-2xl p-5 border border-gray-200"> */}
+        <div className="bg-white rounded-xl p-3 border border-gray-200">
           <p className="text-xs font-bold text-gray-500 mb-3">
             CURRENT ITEM
           </p>
 
-          <h3 className="text-2xl font-bold text-gray-900">
+          {/* <h3 className="text-2xl font-bold text-gray-900"> */}
+          <h3 className="text-lg font-bold text-gray-900">
             {report.title}
           </h3>
 
@@ -867,12 +879,14 @@ const pendingFound =
           </div>
 
           {/* Matched Item */}
-          <div className="bg-white rounded-2xl p-5 border border-gray-200">
+          {/* <div className="bg-white rounded-2xl p-5 border border-gray-200"> */}
+          <div className="bg-white rounded-xl p-3 border border-gray-200">
             <p className="text-xs font-bold text-gray-500 mb-3">
               MATCHED ITEM
             </p>
 
-            <h3 className="text-2xl font-bold text-gray-900">
+            {/* <h3 className="text-2xl font-bold text-gray-900"> */}
+            <h3 className="text-lg font-bold text-gray-900">
               {report.matchedItems?.[0]?.itemId?.title ||
                 "Matched Item"}
             </h3>
@@ -888,52 +902,94 @@ const pendingFound =
             </p>
           </div>
         </div>
+          <div className="flex items-center justify-between gap-3 mt-4 flex-wrap">
 
-        <div className="flex justify-center mt-5">
-          <span className="bg-green-100 text-green-700 px-5 py-2 rounded-full font-bold">
-            Similarity Score:{" "}
-            {Math.round(
-            report.matchedItems?.[0]
-          ?.similarity || 0
-          )}
-            %
-          </span>
-        </div>
+  <span className="bg-green-100 text-green-700 px-3 py-1.5 rounded-full text-sm font-bold">
+    Similarity Score:{" "}
+    {Math.round(
+      report.matchedItems?.[0]?.similarity || 0
+    )}%
+  </span>
 
-        <div className="flex gap-3 mt-5">
-          <button
-            onClick={() =>
-              report.type === "found"
-                ? setFoundModalReport(report)
-                : handleApproveLost(report._id)
-            }
-            className="px-5 py-3 rounded-xl bg-emerald-500 text-white font-bold hover:bg-emerald-600"
-          >
-            Approve Match
-          </button>
+  <div className="flex gap-2 flex-wrap">
 
-          <button
-            onClick={() => handleDeleteSuggestion(report._id)}
-            className="px-4 py-2 rounded-lg border border-orange-200 text-orange-600 text-xs font-bold hover:bg-orange-50 transition-colors"
-          >
-            Delete Suggestion
-          </button>
+    <button
+      onClick={() =>
+        report.type === "found"
+          ? setFoundModalReport(report)
+          : handleApproveLost(report._id)
+      }
+      className="px-3 py-1.5 text-sm rounded-xl bg-emerald-500 text-white font-bold hover:bg-emerald-600"
+    >
+      Approve Match
+    </button>
 
-          <button
-            onClick={() =>
-              setSelectedReport(report)
-            }
-            className="px-5 py-3 rounded-xl border border-gray-200 bg-gray-50 text-gray-700 font-semibold"
-          >
-            View
-          </button>
-        </div>
+    <button
+      onClick={() =>
+        handleDeleteSuggestion(report._id)
+      }
+      className="px-4 py-2 rounded-xl border border-orange-200 text-orange-600 font-bold hover:bg-orange-50"
+    >
+      Delete Suggestion
+    </button>
+
+    <button
+      onClick={() =>
+        setSelectedReport(report)
+      }
+      className="px-4 py-2 rounded-xl border border-gray-200 bg-gray-50 text-gray-700 font-semibold"
+    >
+      View
+    </button>
+
+  </div>
+
+</div>
+       
       </div>
     </div>
   ))
               )}
             </div>
-          </div>
+          </div> 
+          {/* <div className="flex items-center justify-between gap-4 mt-5 flex-wrap">
+
+  <span className="bg-green-100 text-green-700 px-4 py-2 rounded-full font-bold whitespace-nowrap">
+    Similarity Score:{" "}
+    {Math.round(
+      report.matchedItems?.[0]?.similarity || 0
+    )}
+    %
+  </span>
+
+  <div className="flex gap-3">
+    <button
+      onClick={() =>
+        report.type === "found"
+          ? setFoundModalReport(report)
+          : handleApproveLost(report._id)
+      }
+      className="px-5 py-2 rounded-xl bg-emerald-500 text-white font-bold hover:bg-emerald-600"
+    >
+      Approve Match
+    </button>
+
+    <button
+      onClick={() => handleDeleteSuggestion(report._id)}
+      className="px-4 py-2 rounded-xl border border-orange-200 text-orange-600 font-bold hover:bg-orange-50 transition-colors"
+    >
+      Delete Suggestion
+    </button>
+
+    <button
+      onClick={() => setSelectedReport(report)}
+      className="px-5 py-2 rounded-xl border border-gray-200 bg-gray-50 text-gray-700 font-semibold"
+    >
+      View
+    </button>
+  </div>
+
+</div> */}
 
           {/*
             KEY FIX: `setSelectedReport` lives here in AdminDashboard.
@@ -941,7 +997,7 @@ const pendingFound =
             which forwards it to ReportRow, which calls it on button click.
             No child ever references `setSelectedReport` by name — zero no-undef errors.
           */}
-          <PendingSection
+          {/* <PendingSection
             title="Pending Lost Items"
             badgeColor="bg-orange-100 text-orange-700 border-orange-200"
             items={pendingLost}
@@ -959,10 +1015,33 @@ const pendingFound =
             onApprove={handleApproveLost}
             onOpenFoundModal={setFoundModalReport}
             onView={setSelectedReport}
-          />
+          /> */}
+          {/* <div className="grid grid-cols-1 xl:grid-cols-2 gap-6"></div>
+
+  <PendingSection
+    title="Pending Lost Items"
+    badgeColor="bg-orange-100 text-orange-700 border-orange-200"
+    items={pendingLost}
+    emptyText="No lost items pending approval"
+    onApprove={handleApproveLost}
+    onOpenFoundModal={setFoundModalReport}
+    onView={setSelectedReport}
+  />
+
+  <PendingSection
+    title="Pending Found Items"
+    badgeColor="bg-teal-100 text-teal-700 border-teal-200"
+    items={pendingFound}
+    emptyText="No found items pending approval"
+    onApprove={handleApproveLost}
+    onOpenFoundModal={setFoundModalReport}
+    onView={setSelectedReport}
+  />
+
+</div> */}
 
           {/* Quick Stats Row */}
-          <div className="grid grid-cols-3 gap-3">
+          {/* <div className="grid grid-cols-3 gap-3">
             {[
               { label: "Lost Reports",  value: lostReports,        color: "orange" },
               { label: "Found Reports", value: foundReports,       color: "teal"   },
@@ -984,10 +1063,33 @@ const pendingFound =
               </div>
             ))}
           </div>
-        </div>
+        </div> */}
+        <div className="grid grid-cols-2 gap-6 items-start">
+
+  <PendingSection
+    title="Pending Lost Items"
+    badgeColor="bg-orange-100 text-orange-700 border-orange-200"
+    items={pendingLost}
+    emptyText="No lost items pending approval"
+    onApprove={handleApproveLost}
+    onOpenFoundModal={setFoundModalReport}
+    onView={setSelectedReport}
+  />
+
+  <PendingSection
+    title="Pending Found Items"
+    badgeColor="bg-teal-100 text-teal-700 border-teal-200"
+    items={pendingFound}
+    emptyText="No found items pending approval"
+    onApprove={handleApproveLost}
+    onOpenFoundModal={setFoundModalReport}
+    onView={setSelectedReport}
+  />
+
+</div>
 
         {/* Right: Recent Activity (1/3 width) */}
-        <div>
+        {/* <div>
           <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
             <div className="px-5 py-4 border-b border-gray-100">
               <h2 className="text-sm font-bold text-gray-900">Recent Activity</h2>
@@ -1023,7 +1125,7 @@ const pendingFound =
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Found Item Approval Modal */}
       {foundModalReport && (

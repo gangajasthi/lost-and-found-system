@@ -1,7 +1,5 @@
-import React, {
-  useEffect,
-  useState
-} from "react";
+import DashboardLayout from "../components/DashboardLayout";
+import React, {useEffect,useState } from "react";
 
 import axios from "axios";
 
@@ -40,9 +38,12 @@ const ApprovedItems = () => {
 
   return (
 
-    <div className="p-6">
-
-      <h1 className="text-3xl font-bold mb-6">
+    <DashboardLayout isAdmin>
+    {/* <div className="p-6"> */}
+    {/* <div className="w-full"> */}
+      <div className="container mx-auto">
+      {/* <h1 className="text-3xl font-bold mb-6"> */}
+      <h1 className="text-3xl font-bold mb-6 text-left">
         Approved Items
       </h1>
 
@@ -93,6 +94,7 @@ const ApprovedItems = () => {
       </div>
 
     </div>
+     </DashboardLayout>
 
   );
 

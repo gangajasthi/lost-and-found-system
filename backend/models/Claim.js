@@ -29,11 +29,17 @@ const claimSchema = new mongoose.Schema({
         required: true
     },
 
+    answers: [
+        {
+            question: String,
+            answer: String
+  }
+],
     status: {
         type: String,
         default: "pending"
-    }
-
+    },
+    
 }, { timestamps: true });
 
 module.exports = mongoose.model("Claim", claimSchema);
