@@ -360,16 +360,27 @@ const [rejectReason, setRejectReason] = useState("");
   );
 
 const aiSuggestions =
-  pendingReports.filter(
-    (r) =>
-      r.matchedItems?.length > 0 &&
+  pendingReports.filter((r) => {
+
+    if (!r.matchedItems?.length) return false;
+
+    const matchedItem =
+      r.matchedItems?.[0]?.itemId;
+
+    if (!matchedItem) return false;
+
+    return (
+      r.status !== "approved" &&
+      r.status !== "rejected" &&
+      matchedItem.status !== "approved" &&
+      matchedItem.status !== "rejected" &&
       JSON.stringify(r)
         .toLowerCase()
-        .includes(
-          searchTerm.toLowerCase()
-        )
-  );
-  
+        .includes(searchTerm.toLowerCase())
+    );
+
+  });
+
 const pendingLost =
   pendingReports.filter(
     (r) =>
@@ -392,23 +403,6 @@ const pendingFound =
         )
   );
 
-  // const totalReports  = reports.length;
-  //  const resolvedItems = reports.filter((r) => r.status === "approved").length;
-  // const activeClaims  = 0;
-  // const lostReports   = reports.filter((r) => r.type === "lost").length;
-  // const foundReports  = reports.filter((r) => r.type === "found").length;
-  // const recoveryRate  = totalReports > 0 ? Math.round((resolvedItems / totalReports) * 100) : 0;
-
-  // const handleApproveLost = async (id) => {
-  //   try {
-  //     await axios.put(`http://localhost:5000/api/items/${id}`, { status: "approved" });
-  //     fetchReports();
-  //     showFeedback("approved", id);
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // };
-
   const openRejectModal = (report) => {
   setRejectModal(report);
 };
@@ -420,7 +414,34 @@ const pendingFound =
     setApproving(true);
 
     await axios.put(
-      `http://localhost:5000/api/admin/approve/${id}`
+    `http://localhost:5000/api/items/${id}`
+    );
+
+    await fetchReports();
+
+    showFeedback("approved", id);
+
+  } catch (error) {
+
+    console.log(error);
+
+  } finally {
+
+    setApproving(false);
+
+  }
+
+};
+
+// CHANGED: "Approve Match" calls the new approve-match endpoint to approve BOTH items
+const handleApproveMatch = async (id) => {
+
+  try {
+
+    setApproving(true);
+
+    await axios.put(
+      `http://localhost:5000/api/items/approve-match/${id}`
     );
 
     await fetchReports();
@@ -531,155 +552,7 @@ const handleReject = async (id, reason) => {
         className="w-full md:w-96 px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
       />
     </div>
-          {/* <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        {ANALYTICS.map((stat) => {
-          const c = COLOR_MAP[stat.color];
-          const value =
-            stat.label === "Total Reports"
-              ? totalReports
-              : stat.label === "Pending Approvals"
-              ? pendingReports.length
-              : stat.label === "Items Resolved"
-              ? resolvedItems
-              : activeClaims;
-          return (
-            <div key={stat.label} className={`rounded-2xl p-5 border border-gray-100 shadow-sm ${c.bg}`}>
-              <div className={`w-11 h-11 rounded-xl flex items-center justify-center mb-3 ring-2 ${c.icon} ${c.ring}`}>
-                {stat.icon}
-              </div>
-              <p className="text-2xl font-black text-gray-900 leading-tight">{value}</p>
-              <p className="text-xs font-semibold text-gray-600 mt-0.5">{stat.label}</p>
-              <p className={`text-[11px] font-medium mt-1 ${stat.positive ? "text-emerald-600" : "text-amber-600"}`}>
-                {stat.change}
-              </p>
-            </div>
-          );
-        })}
-      </div> */}
 
-
-      
-      {/* <div className="bg-white rounded-2xl border border-gray-200 p-5 mb-6">
-
-  <h2 className="text-lg font-bold mb-4">
-    Claims
-  </h2>
-
-  {claims.map((claim) => (
-
-    <div
-      key={claim._id}
-      className="border rounded-xl p-3 mb-3"
-    >
-
-      <h3 className="font-bold">
-        {claim.itemId?.title}
-      </h3>
-
-      <p>
-        {claim.claimantName}
-      </p>
-
-      <p>
-        {claim.message}
-      </p>
-
-      <p>
-        {claim.status}
-      </p>
-
-    </div>
-
-  ))}
-
-</div> */}
-
-{/* Approved + Rejected + Claims Cards */}
-{/* <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-
-  {/* Approved */}
-  {/* <div
-    onClick={() =>
-      navigate("/approved-items")
-    }
-    className="rounded-2xl p-5 border border-gray-100 shadow-sm bg-green-50 cursor-pointer hover:shadow-md transition"
-  >
-
-    <p className="text-2xl font-black text-gray-900">
-      {resolvedItems}
-    </p>
-
-    <p className="text-xs font-semibold text-gray-600 mt-1">
-      Approved Items
-    </p>
-
-    <p className="text-[11px] font-medium mt-1 text-green-600">
-      View approved item details
-    </p>
-
-  </div> */}
-
-  {/* Rejected */}
-  {/* <div
-    onClick={() =>
-      navigate("/rejected-items")
-    }
-    className="rounded-2xl p-5 border border-gray-100 shadow-sm bg-red-50 cursor-pointer hover:shadow-md transition"
-  >
-
-    <p className="text-2xl font-black text-gray-900">
-
-      {
-        reports.filter(
-          (r) =>
-            r.status ===
-            "rejected"
-        ).length
-      }
-
-    </p>
-
-    <p className="text-xs font-semibold text-gray-600 mt-1">
-      Rejected Items
-    </p>
-
-    <p className="text-[11px] font-medium mt-1 text-red-600">
-      View rejected item details
-    </p> */}
-
-  {/* </div> */}
-
-  {/* Claims */}
-  {/* <div
-    onClick={() =>
-      navigate("/admin-claims")
-    }
-    className="rounded-2xl p-5 border border-gray-100 shadow-sm bg-blue-50 cursor-pointer hover:shadow-md transition"
-  >
-
-    <p className="text-2xl font-black text-gray-900">
-      {claims.length}
-    </p>
-
-    <p className="text-xs font-semibold text-gray-600 mt-1">
-      Claims
-    </p>
-
-    <p className="text-[11px] font-medium mt-1 text-blue-600">
-      View claims details
-    </p>
-
-  </div>
-
-</div> */} 
-
-      {/* Two-column layout */}
-      {/* <div className="grid grid-cols-1 xl:grid-cols-3 gap-6"> */}
-      {/* <div className="space-y-6"></div> */}
-        {/* Left: Pending sections (2/3 width) */}
-        {/* <div className="xl:col-span-2 space-y-6"> */}
-        {/* <div className="space-y-0"> */}
-          {/* <div className="rounded-3xl border border-gray-200 bg-white overflow-hidden shadow-sm"> */}
           <div className="rounded-3xl border border-gray-200 bg-white overflow-hidden shadow-sm max-h-[700px] flex flex-col">
             <div className="px-7 py-5 border-b border-gray-100 flex items-center gap-3">
               <h2 className="text-lg font-bold text-gray-900">
@@ -691,7 +564,6 @@ const handleReject = async (id, reason) => {
               </span>
             </div>
 
-            {/* <div className="divide-y divide-gray-100"> */}
             <div className="divide-y divide-gray-100 overflow-y-auto">
               {aiSuggestions.length === 0 ? (
                 <div className="p-16 text-center text-gray-400">
@@ -700,10 +572,8 @@ const handleReject = async (id, reason) => {
               ) : (
                 aiSuggestions.map((report) => (
   <div key={report._id} className="p-5">
-    {/* <div className="rounded-3xl border border-blue-200 bg-blue-50 p-5"> */}
     <div className="rounded-2xl border border-blue-200 bg-blue-50 p-3">
 
-      {/* <h3 className="text-xl font-bold text-blue-700 mb-5"> */}
       <h3 className="text-lg font-bold text-blue-700 mb-3">
         🤖 AI Suggested Match
       </h3>
@@ -711,13 +581,11 @@ const handleReject = async (id, reason) => {
       <div className="grid md:grid-cols-2 gap-3">
 
         {/* Current Item */}
-        {/* <div className="bg-white rounded-2xl p-5 border border-gray-200"> */}
         <div className="bg-white rounded-xl p-3 border border-gray-200">
           <p className="text-xs font-bold text-gray-500 mb-3">
             CURRENT ITEM
           </p>
 
-          {/* <h3 className="text-2xl font-bold text-gray-900"> */}
           <h3 className="text-lg font-bold text-gray-900">
             {report.title}
           </h3>
@@ -732,13 +600,11 @@ const handleReject = async (id, reason) => {
           </div>
 
           {/* Matched Item */}
-          {/* <div className="bg-white rounded-2xl p-5 border border-gray-200"> */}
           <div className="bg-white rounded-xl p-3 border border-gray-200">
             <p className="text-xs font-bold text-gray-500 mb-3">
               MATCHED ITEM
             </p>
 
-            {/* <h3 className="text-2xl font-bold text-gray-900"> */}
             <h3 className="text-lg font-bold text-gray-900">
               {report.matchedItems?.[0]?.itemId?.title ||
                 "Matched Item"}
@@ -764,12 +630,12 @@ const handleReject = async (id, reason) => {
     )}%
   </span>
 
-        
   <div className="flex gap-2 flex-wrap">
 
+    {/* CHANGED: now calls handleApproveMatch to approve BOTH items */}
     <button
       onClick={() =>
-        handleApproveLost(report._id)
+        handleApproveMatch(report._id)
       }
       className="px-3 py-1.5 text-sm rounded-xl bg-emerald-500 text-white font-bold hover:bg-emerald-600"
     >
@@ -804,124 +670,7 @@ const handleReject = async (id, reason) => {
               )}
             </div>
           </div> 
-          {/* <div className="flex items-center justify-between gap-4 mt-5 flex-wrap">
 
-  <span className="bg-green-100 text-green-700 px-4 py-2 rounded-full font-bold whitespace-nowrap">
-    Similarity Score:{" "}
-    {Math.round(
-      report.matchedItems?.[0]?.similarity || 0
-    )}
-    %
-  </span>
-
-  <div className="flex gap-3">
-    <button
-      onClick={() =>
-        report.type === "found"
-          ? setFoundModalReport(report)
-          : handleApproveLost(report._id)
-      }
-      className="px-5 py-2 rounded-xl bg-emerald-500 text-white font-bold hover:bg-emerald-600"
-    >
-      Approve Match
-    </button>
-
-    <button
-      onClick={() => handleDeleteSuggestion(report._id)}
-      className="px-4 py-2 rounded-xl border border-orange-200 text-orange-600 font-bold hover:bg-orange-50 transition-colors"
-    >
-      Delete Suggestion
-    </button>
-
-    <button
-      onClick={() => setSelectedReport(report)}
-      className="px-5 py-2 rounded-xl border border-gray-200 bg-gray-50 text-gray-700 font-semibold"
-    >
-      View
-    </button>
-  </div>
-
-</div> */}
-
-          {/*
-            KEY FIX: `setSelectedReport` lives here in AdminDashboard.
-            We pass it down as the `onView` prop to PendingSection,
-            which forwards it to ReportRow, which calls it on button click.
-            No child ever references `setSelectedReport` by name — zero no-undef errors.
-          */}
-          {/* <PendingSection
-            title="Pending Lost Items"
-            badgeColor="bg-orange-100 text-orange-700 border-orange-200"
-            items={pendingLost}
-            emptyText="No lost items pending approval"
-            onApprove={handleApproveLost}
-            onReject={openRejectModal}
-            onOpenFoundModal={null}
-            onView={setSelectedReport}
-          />
-
-          <PendingSection
-            title="Pending Found Items"
-            badgeColor="bg-teal-100 text-teal-700 border-teal-200"
-            items={pendingFound}
-            emptyText="No found items pending approval"
-            onApprove={handleApproveLost}
-            onReject={openRejectModal}
-            onOpenFoundModal={null}
-            onView={setSelectedReport}
-/>
-          /> */}
-          {/* <div className="grid grid-cols-1 xl:grid-cols-2 gap-6"></div>
-
-  <PendingSection
-    title="Pending Lost Items"
-    badgeColor="bg-orange-100 text-orange-700 border-orange-200"
-    items={pendingLost}
-    emptyText="No lost items pending approval"
-    onApprove={handleApproveLost}
-    onOpenFoundModal={setFoundModalReport}
-    onView={setSelectedReport}
-  />
-
-  <PendingSection
-    title="Pending Found Items"
-    badgeColor="bg-teal-100 text-teal-700 border-teal-200"
-    items={pendingFound}
-    emptyText="No found items pending approval"
-    onApprove={handleApproveLost}
-    onOpenFoundModal={
-    
-    
-    }
-    onView={setSelectedReport}
-  />
-
-</div> */}
-
-          {/* Quick Stats Row */}
-          {/* <div className="grid grid-cols-3 gap-3">
-            {[
-              { label: "Lost Reports",  value: lostReports,        color: "orange" },
-              { label: "Found Reports", value: foundReports,       color: "teal"   },
-              { label: "Recovery Rate", value: `${recoveryRate}%`, color: "blue"   },
-            ].map((s) => (
-              <div key={s.label} className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 text-center">
-                <p
-                  className={`text-2xl font-black ${
-                    s.color === "orange"
-                      ? "text-orange-500"
-                      : s.color === "teal"
-                      ? "text-teal-600"
-                      : "text-blue-600"
-                  }`}
-                >
-                  {s.value}
-                </p>
-                <p className="text-xs text-gray-500 font-medium mt-0.5">{s.label}</p>
-              </div>
-            ))}
-          </div>
-        </div> */}
         <div className="grid grid-cols-2 gap-6 items-start">
 
   <PendingSection
@@ -947,51 +696,6 @@ const handleReject = async (id, reason) => {
 
 </div>
 
-        {/* Right: Recent Activity (1/3 width) */}
-        {/* <div>
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-            <div className="px-5 py-4 border-b border-gray-100">
-              <h2 className="text-sm font-bold text-gray-900">Recent Activity</h2>
-            </div>
-            <div className="divide-y divide-gray-50">
-              {RECENT_ACTIVITY.map((act) => (
-                <div key={act.id} className="px-5 py-4 flex items-center gap-3">
-                  <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-bold capitalize ${
-                      ACT_COLORS[act.color]
-                    }`}
-                  >
-                    {act.action.charAt(0).toUpperCase()}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-semibold text-gray-800 truncate">{act.item}</p>
-                    <p className="text-[11px] text-gray-400 capitalize">
-                      {act.action} &middot; {act.by}
-                    </p>
-                  </div>
-                  <span className="text-[10px] text-gray-400 flex-shrink-0">{act.time}</span>
-                </div>
-              ))}
-            </div>
-
-            <div className="p-4 border-t border-gray-100 bg-blue-50">
-              <p className="text-[10px] font-bold text-blue-700 uppercase tracking-wide mb-1">
-                AI Suggestion System
-              </p>
-              <p className="text-[10px] text-blue-600">
-                OpenCV &amp; NLP matching runs in background to suggest potential matches. Admin makes final decision.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div> */}
-
-
-      {/*
-        View Report Modal.
-        `selectedReport` and `setSelectedReport` are defined here in AdminDashboard — no scope issues.
-        ViewReportModal renders null when report is null, so no conditional JSX needed here.
-      */}
       <ViewReportModal
         report={selectedReport}
         onClose={() => setSelectedReport(null)}
@@ -1043,5 +747,3 @@ const handleReject = async (id, reason) => {
     </DashboardLayout>
   );
 }
-
-

@@ -8,7 +8,8 @@ const {
   updateItem,
   deleteItem,
   removeMatch,
-  rejectItem
+  rejectItem,
+  approveMatch
 } = require("../controllers/itemController");
 
 const upload = require("../middleware/upload");
@@ -55,6 +56,9 @@ router.put(
   removeMatch
 );
 
-
+router.put(
+  "/approve-match/:id",
+  approveMatch
+);
 
 module.exports = router;

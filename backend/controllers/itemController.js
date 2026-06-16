@@ -278,7 +278,7 @@ exports.getSingleItem = async (req, res) => {
 
 };
 
-// UPDATE ITEM
+// UPDATE ITEM — approves ONLY this item, leaves matched item pending
 exports.updateItem = async (req, res) => {
 
     try {
@@ -296,115 +296,34 @@ exports.updateItem = async (req, res) => {
 
         }
 
-        // LOST ITEM
-        if (existingItem.type === "lost") {
-
-            let resolvedWith = null;
-
-            if (
-                existingItem.matchedItems?.length > 0
-            ) {
-
-                const matchedId =
-                    existingItem.matchedItems[0].itemId;
-
-                const matchedItem =
-                    await Item.findById(matchedId);
-
-                if (matchedItem) {
-
-                    matchedItem.status =
-                        "approved";
-
-                    matchedItem.approved =
-                        true;
-
-                    matchedItem.resolved =
-                        true;
-
-                    matchedItem.resolvedWith =
-                        existingItem._id;
-
-                    await matchedItem.save();
-
-                    resolvedWith =
-                        matchedItem._id;
+        // Remove this item from every other item's matchedItems
+        await Item.updateMany(
+            {
+                "matchedItems.itemId": existingItem._id
+            },
+            {
+                $pull: {
+                    matchedItems: {
+                        itemId: existingItem._id
+                    }
                 }
             }
+        );
 
-            const item =
-                await Item.findByIdAndUpdate(
-                    req.params.id,
-                    {
-                        status: "approved",
-                        approved: true,
-                        resolved: true,
-                        resolvedWith
-                    },
-                    { new: true }
-                );
+        // Clear this item's own matchedItems so the AI suggestion disappears
+        const item = await Item.findByIdAndUpdate(
+            req.params.id,
+            {
+                status: "approved",
+                approved: true,
+                resolved: false,
+                matchedItems: []
+            },
+            { new: true }
+        );
 
-            return res.status(200).json({
-                message:
-                    "Lost item approved successfully",
-                item
-            });
-
-        }
-
-        // FOUND ITEM
-
-
-        let resolvedWith = null;
-
-        if (
-            existingItem.matchedItems?.length > 0
-        ) {
-
-            const matchedId =
-                existingItem.matchedItems[0].itemId;
-
-            const matchedItem =
-                await Item.findById(matchedId);
-
-            if (matchedItem) {
-
-                matchedItem.status =
-                    "approved";
-
-                matchedItem.approved =
-                    true;
-
-                matchedItem.resolved =
-                    true;
-
-                matchedItem.resolvedWith =
-                    existingItem._id;
-
-                await matchedItem.save();
-
-                resolvedWith =
-                    matchedItem._id;
-
-            }
-
-        }
-
-        const item =
-            await Item.findByIdAndUpdate(
-                req.params.id,
-                {
-                    status: "approved",
-                    approved: true,
-                    resolved: true,
-                    resolvedWith
-                },
-                { new: true }
-            );
-
-        res.status(200).json({
-            message:
-                "Found item approved successfully",
+        return res.status(200).json({
+            message: "Item approved successfully",
             item
         });
 
@@ -418,6 +337,94 @@ exports.updateItem = async (req, res) => {
 
 };
 
+// APPROVE MATCH — approves BOTH items in an AI suggestion
+exports.approveMatch = async (req, res) => {
+
+    try {
+
+        const existingItem =
+            await Item.findById(
+                req.params.id
+            );
+
+        if (!existingItem) {
+
+            return res.status(404).json({
+                message: "Item not found"
+            });
+
+        }
+
+        const matchedId =
+            existingItem.matchedItems?.[0]?.itemId;
+
+        // Approve this item
+        await Item.findByIdAndUpdate(
+            existingItem._id,
+            {
+                status: "approved",
+                approved: true,
+                resolved: true,
+                matchedItems: []
+            }
+        );
+
+        // Approve the matched item (if it exists)
+        if (matchedId) {
+
+            await Item.findByIdAndUpdate(
+                matchedId,
+                {
+                    status: "approved",
+                    approved: true,
+                    resolved: true,
+                    matchedItems: []
+                }
+            );
+
+            // Remove references to matched item from all other docs
+            await Item.updateMany(
+                {
+                    "matchedItems.itemId": matchedId
+                },
+                {
+                    $pull: {
+                        matchedItems: {
+                            itemId: matchedId
+                        }
+                    }
+                }
+            );
+
+        }
+
+        // Remove references to this item from all other docs
+        await Item.updateMany(
+            {
+                "matchedItems.itemId": existingItem._id
+            },
+            {
+                $pull: {
+                    matchedItems: {
+                        itemId: existingItem._id
+                    }
+                }
+            }
+        );
+
+        return res.status(200).json({
+            message: "Match approved successfully"
+        });
+
+    } catch (error) {
+
+        res.status(500).json({
+            message: error.message
+        });
+
+    }
+
+};
 
 //Reject Item
 exports.rejectItem = async (req, res) => {
@@ -425,14 +432,35 @@ exports.rejectItem = async (req, res) => {
 
     const { rejectionReason } = req.body;
 
-    const item = await Item.findByIdAndUpdate(
-      req.params.id,
+    const item = await Item.findById(req.params.id);
+
+    if (!item) {
+      return res.status(404).json({
+        message: "Item not found"
+      });
+    }
+
+    item.status = "rejected";
+    item.rejectionReason = rejectionReason;
+
+    // Remove this item from every other item's matchedItems
+    await Item.updateMany(
       {
-        status: "rejected",
-        rejectionReason
+        "matchedItems.itemId": item._id
       },
-      { new: true }
+      {
+        $pull: {
+          matchedItems: {
+            itemId: item._id
+          }
+        }
+      }
     );
+
+    // Clear this item's own matchedItems so the AI suggestion disappears
+    item.matchedItems = [];
+
+    await item.save();
 
     res.status(200).json({
       message: "Item rejected successfully",
@@ -512,6 +540,25 @@ exports.removeMatch = async (req, res) => {
 
         }
 
+        // Clear the match from the OTHER side too
+        const matchedId =
+            item.matchedItems?.[0]?.itemId;
+
+        if (matchedId) {
+
+            await Item.updateOne(
+                { _id: matchedId },
+                {
+                    $pull: {
+                        matchedItems: {
+                            itemId: item._id
+                        }
+                    }
+                }
+            );
+
+        }
+
         item.matchedItems = [];
 
         await item.save();
@@ -529,4 +576,3 @@ exports.removeMatch = async (req, res) => {
     }
 
 };
-
