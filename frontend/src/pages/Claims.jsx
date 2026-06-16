@@ -5,6 +5,41 @@ import StatusBadge from "../components/StatusBadge";
 
 const API = "http://localhost:5000/api";
 
+
+const CATEGORY_QUESTIONS = {
+
+  "Wallet / Purse": [
+    "What color is the wallet?",
+    "What cards were inside?",
+    "Any unique mark or sticker?"
+  ],
+
+  "ID Card / Documents": [
+    "What is your ID number?",
+    "Which department?",
+    "Which year?"
+  ],
+
+  "Keys": [
+    "How many keys were there?",
+    "Any keychain attached?",
+    "What color is the keychain?"
+  ],
+
+  "Clothing & Accessories": [
+    "What color is it?",
+    "Any special design?",
+    "Where did you lose it?"
+  ],
+
+  "Electronics": [
+    "What brand is it?",
+    "What color is it?",
+    "Any sticker or wallpaper?"
+  ]
+
+};
+
 // ── Item Card ────────────────────────────────────────────────────
 function ItemCard({ item, onAction, alreadyClaimed }) {
   const isLost = item.type === "lost";
@@ -97,6 +132,7 @@ export default function Claims() {
 
   const [actionModal, setActionModal]       = useState(null);
   const [actionReason, setActionReason]     = useState("");
+  const [answers, setAnswers] = useState(["", "", ""]);
   const [actionSubmitted, setActionSubmitted] = useState(false);
 
   const [browseItems, setBrowseItems]   = useState([]);
@@ -152,17 +188,36 @@ export default function Claims() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      // await axios.post(`${API}/claims`, {
+      //   itemId:        actionModal._id,
+      //   claimantName:  user.name,
+      //   claimantEmail: user.email,
+      //   message:       actionReason,
+      //   userId:        user._id,
+      // });
+
       await axios.post(`${API}/claims`, {
-        itemId:        actionModal._id,
-        claimantName:  user.name,
-        claimantEmail: user.email,
-        message:       actionReason,
-        userId:        user._id,
-      });
+         itemId: actionModal._id,
+         claimantName: user.name,
+          claimantEmail: user.email,
+          message: actionReason,
+          userId: user._id,
+  answers:
+    CATEGORY_QUESTIONS[
+      actionModal.category
+    ]?.map((question, index) => ({
+      question,
+      answer: answers[index]
+    })) || []
+
+});
       alert("✅ Claim submitted successfully");
       setActionSubmitted(true);
+      // setActionModal(null);
+      // setActionReason("");
       setActionModal(null);
       setActionReason("");
+      setAnswers(["", "", ""]);
       setTimeout(() => setActionSubmitted(false), 4000);
     } catch (err) {
       alert("Failed to submit. Please try again.");
@@ -448,10 +503,45 @@ export default function Claims() {
                 </p>
               </div>
 
+              {/* <label className="block text-sm font-semibold text-gray-700 mb-2">
+              </label> */}
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                {isLostModal ? "Where / How did you find it?" : "Proof of Ownership"}{" "}
-                <span className="text-red-500">*</span>
-              </label>
+                {isLostModal
+                         ? "Where / How did you find it?"
+                          : "Proof of Ownership"}{" "}
+                    <span className="text-red-500">*</span>
+            </label>
+
+            {!isLostModal &&
+  CATEGORY_QUESTIONS[actionModal?.category]?.map(
+    (question, index) => (
+      <div key={index} className="mb-3">
+
+        <label className="block text-sm font-semibold text-gray-700 mb-1">
+          {question}
+        </label>
+
+        <input
+          type="text"
+          value={answers[index]}
+          onChange={(e) => {
+
+            const newAnswers = [...answers];
+
+            newAnswers[index] =
+              e.target.value;
+
+            setAnswers(newAnswers);
+
+          }}
+          className="w-full px-4 py-2 rounded-xl border border-gray-200"
+          required
+        />
+
+      </div>
+    )
+)}
+
               <textarea
                 className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none min-h-[120px]"
                 placeholder={

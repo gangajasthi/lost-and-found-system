@@ -115,6 +115,13 @@ resolvedWith: {
   ref: "Item",
   default: null,
 },
+
+// verificationQuestions: [
+//   {
+//     question: String,
+//     expectedAnswer: String
+//   }
+// ],
   },
   { timestamps: true }
 );

@@ -1,7 +1,5 @@
-import React, {
-  useEffect,
-  useState
-} from "react";
+import DashboardLayout from "../components/DashboardLayout";
+import React, {useEffect,useState} from "react";
 
 import axios from "axios";
 
@@ -40,7 +38,10 @@ const RejectedItems = () => {
 
   return (
 
-    <div className="p-6">
+  <DashboardLayout isAdmin>
+
+    {/* <div className="p-6"> */}
+    <div className="container mx-auto">
 
       <h1 className="text-3xl font-bold mb-6">
         Rejected Items
@@ -93,6 +94,7 @@ const RejectedItems = () => {
       </div>
 
     </div>
+     </DashboardLayout>
 
   );
 

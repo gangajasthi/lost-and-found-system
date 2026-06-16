@@ -72,18 +72,16 @@ exports.updateClaimStatus =
 
       const claim =
         await Claim.findByIdAndUpdate(
-          req.params.id,
-          {
-              status:
-    req.body.status,
-
-  rejectionReason:
-    req.body.rejectionReason || ""
-          },
-          {
-            new: true
-          }
-        ).populate("itemId");
+        req.params.id,
+        {
+          status: req.body.status,
+          rejectionReason:
+            req.body.rejectionReason || ""
+        },
+        {
+          new: true
+        }
+      ).populate("itemId");
 
       await transporter.sendMail({
 
