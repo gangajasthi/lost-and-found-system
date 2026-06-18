@@ -1,5 +1,6 @@
 const Claim = require("../models/Claim");
 const nodemailer = require("nodemailer");
+const Item = require("../models/Item");
 
 const transporter =
   nodemailer.createTransport({
@@ -63,6 +64,42 @@ exports.getAllClaims = async (req, res) => {
 
 };
 
+//claims resolved
+exports.markResolved = async (req, res) => {
+  try {
+
+    const claim = await Claim.findById(req.params.id);
+
+    if (!claim) {
+      return res.status(404).json({
+        message: "Claim not found"
+      });
+    }
+
+    const item = await Item.findById(claim.itemId);
+
+    if (!item) {
+      return res.status(404).json({
+        message: "Item not found"
+      });
+    }
+
+    item.handoverCompleted = true;
+
+    await item.save();
+
+    res.status(200).json({
+      message: "Item marked as resolved"
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+      message: error.message
+    });
+
+  }
+};
 
 // UPDATE CLAIM STATUS
 exports.updateClaimStatus =

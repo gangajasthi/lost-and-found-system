@@ -112,6 +112,7 @@ const [rejectReason, setRejectReason] =
 
     const handleRejectClaim = async () => {
 
+
   try {
 
     await axios.put(
@@ -134,6 +135,27 @@ const [rejectReason, setRejectReason] =
   }
 
 };
+
+const handleResolve = async (id) => {
+
+  try {
+
+    await axios.put(
+      `http://localhost:5000/api/claims/resolve/${id}`
+    );
+
+    fetchClaims();
+
+    alert("Item marked as resolved");
+
+  } catch (error) {
+
+    console.log(error);
+
+  }
+
+};
+
   return (
 
    <DashboardLayout isAdmin>
@@ -250,6 +272,23 @@ const [rejectReason, setRejectReason] =
     </div>
 
   )}
+
+{claim.status === "approved" && !claim.itemId?.handoverCompleted && (
+  <button
+    onClick={() =>
+      handleResolve(claim._id)
+    }
+    className="px-3 py-1 rounded-lg bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700"
+  >
+    Mark Resolved
+  </button>
+)}
+
+{claim.status === "approved" && claim.itemId?.handoverCompleted && (
+  <span className="px-3 py-1 rounded-lg bg-green-100 text-green-700 text-xs font-semibold">
+    Resolved ✓
+  </span>
+)}
 
 </div>
 

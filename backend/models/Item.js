@@ -110,6 +110,11 @@ resolved: {
   default: false,
 },
 
+handoverCompleted: {
+  type: Boolean,
+  default: false
+},
+
 resolvedWith: {
   type: mongoose.Schema.Types.ObjectId,
   ref: "Item",

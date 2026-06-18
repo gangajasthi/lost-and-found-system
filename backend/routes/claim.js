@@ -5,7 +5,8 @@ const router = express.Router();
 const {
     createClaim,
     getAllClaims,
-    updateClaimStatus
+    updateClaimStatus,
+    markResolved
 } = require("../controllers/claimController");
 
 
@@ -17,5 +18,8 @@ router.get("/", getAllClaims);
 
 // UPDATE CLAIM STATUS
 router.put("/:id", updateClaimStatus);
+
+router.put("/resolve/:id", markResolved);
+
 
 module.exports = router;

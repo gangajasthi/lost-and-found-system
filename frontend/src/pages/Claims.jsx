@@ -117,7 +117,7 @@ function ItemCard({ item, onAction, alreadyClaimed }) {
               : "bg-blue-600 hover:bg-blue-700 text-white"
             }`}
         >
-          {alreadyClaimed ? "Already Submitted ✅" : isLost ? "I Found This" : "Claim This Item"}
+          {alreadyClaimed ? "Claim Submitted ✅" : isLost ? "I Found This" : "Claim This Item"}
         </button>
       </div>
     </div>
