@@ -45,6 +45,12 @@ const claimSchema = new mongoose.Schema({
             answer: String
   }
 ],
+
+    verificationScore: {
+    type: Number,
+    default: 0
+},
+
     status: {
         type: String,
         default: "pending"

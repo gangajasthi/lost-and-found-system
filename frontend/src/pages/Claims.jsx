@@ -135,6 +135,10 @@ export default function Claims() {
   const [answers, setAnswers] = useState(["", "", ""]);
   const [actionSubmitted, setActionSubmitted] = useState(false);
 
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [chatMessages, setChatMessages] = useState([]);
+  const [currentAnswer, setCurrentAnswer] = useState("");
+
   const [browseItems, setBrowseItems]   = useState([]);
   const [itemsLoading, setItemsLoading] = useState(true);
   const [itemsError, setItemsError]     = useState("");
@@ -184,6 +188,84 @@ export default function Claims() {
     fetchMyClaims();
   }, [actionSubmitted, user?.email]);
 
+
+  const openClaimAssistant = (item) => {
+
+  setActionModal(item);
+
+  if (item.type === "found") {
+
+    const questions =
+      CATEGORY_QUESTIONS[item.category] || [];
+
+    if (questions.length > 0) {
+
+      setChatMessages([
+        {
+          sender: "bot",
+          text: questions[0]
+        }
+      ]);
+
+      setCurrentQuestion(0);
+
+      setAnswers(["", "", ""]);
+
+      setCurrentAnswer("");
+    }
+  }
+};
+
+
+const handleNextQuestion = () => {
+
+  if (!currentAnswer.trim()) return;
+
+  const questions =
+    CATEGORY_QUESTIONS[actionModal.category] || [];
+
+  const updatedAnswers = [...answers];
+
+  updatedAnswers[currentQuestion] =
+    currentAnswer;
+
+  setAnswers(updatedAnswers);
+
+  const updatedChat = [
+    ...chatMessages,
+    {
+      sender: "user",
+      text: currentAnswer
+    }
+  ];
+
+  const nextIndex =
+    currentQuestion + 1;
+
+  if (nextIndex < questions.length) {
+
+  updatedChat.push({
+    sender: "bot",
+    text: questions[nextIndex]
+  });
+
+  setCurrentQuestion(nextIndex);
+
+} else {
+
+  updatedChat.push({
+    sender: "bot",
+    text:
+      "✅ Thank you. Please click Submit Claim to complete verification."
+  });
+
+}
+
+  setChatMessages(updatedChat);
+
+  setCurrentAnswer("");
+};
+
   // ── Submit claim ───────────────────────────────────────────────
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -196,11 +278,22 @@ export default function Claims() {
       //   userId:        user._id,
       // });
 
+      console.log({
+  verificationScore:
+    Math.round(
+      (
+        answers.filter(a => a.trim()).length /
+        answers.length
+      ) * 100
+    )
+});
+
       await axios.post(`${API}/claims`, {
          itemId: actionModal._id,
          claimantName: user.name,
           claimantEmail: user.email,
-          message: actionReason,
+          // message: actionReason,
+          message: "Submitted through AI Claim Assistant",
           userId: user._id,
   answers:
     CATEGORY_QUESTIONS[
@@ -208,7 +301,16 @@ export default function Claims() {
     ]?.map((question, index) => ({
       question,
       answer: answers[index]
-    })) || []
+    })) || [],
+    verificationScore:
+  Math.round(
+    (
+      answers.filter(
+        (a) => a.trim()
+      ).length /
+      answers.length
+    ) * 100
+  )
 
 });
       alert("✅ Claim submitted successfully");
@@ -219,9 +321,19 @@ export default function Claims() {
       setActionReason("");
       setAnswers(["", "", ""]);
       setTimeout(() => setActionSubmitted(false), 4000);
-    } catch (err) {
-      alert("Failed to submit. Please try again.");
-    }
+    // } catch (err) {
+    //   alert("Failed to submit. Please try again.");
+    // }
+ } catch (err) {
+
+  console.log(err.response?.data);
+
+  alert(
+    err.response?.data?.message ||
+    "Failed to submit"
+  );
+
+}
   };
 
   const isLostModal = actionModal?.type === "lost";
@@ -338,12 +450,12 @@ export default function Claims() {
                     );
 
                     return (
-                      <ItemCard
+                     <ItemCard
                         key={item._id}
                         item={item}
-                        onAction={setActionModal}
+                        onAction={openClaimAssistant}
                         alreadyClaimed={alreadyClaimed}
-                      />
+                />
                     );
                   })}
               </div>
@@ -368,12 +480,12 @@ export default function Claims() {
                     );
 
                     return (
-                      <ItemCard
+                     <ItemCard
                         key={item._id}
                         item={item}
-                        onAction={setActionModal}
-                        alreadyClaimed={alreadyClaimed}
-                      />
+                         onAction={openClaimAssistant}
+                         alreadyClaimed={alreadyClaimed}
+                />
                     );
                   })}
               </div>
@@ -484,15 +596,83 @@ export default function Claims() {
       {actionModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
-            <div className={`px-6 py-5 bg-gradient-to-r
-              ${isLostModal ? "from-orange-700 to-orange-500" : "from-blue-900 to-blue-700"}`}>
-              <h2 className="text-base font-bold text-white">
-                {isLostModal ? "I Found This Item" : "Claim Item"}
+            {/* <div className={`px-6 py-5 bg-gradient-to-r
+              ${isLostModal ? "from-orange-700 to-orange-500" : "from-blue-900 to-blue-700"}`}> */}
+
+              {/* <div className="flex justify-between items-start">
+
+  <div>
+
+    <h2 className="text-lg font-bold text-white flex items-center gap-2">
+      🤖 AI Claim Assistant
+    </h2>
+
+    <p className="text-sm text-blue-100 mt-1">
+      Ownership Verification Chat
+    </p>
+
+  </div>
+
+  <button
+    type="button"
+    onClick={() => {
+      setActionModal(null);
+      setActionReason("");
+      setAnswers(["", "", ""]);
+      setChatMessages([]);
+      setCurrentQuestion(0);
+      setCurrentAnswer("");
+    }}
+    className="text-white text-2xl font-bold hover:text-gray-200 transition"
+  >
+    x
+  </button>
+
+</div> */}
+
+<div className={`px-6 py-5 bg-gradient-to-r
+${isLostModal
+  ? "from-orange-700 to-orange-500"
+  : "from-blue-900 to-blue-700"
+}`}>
+
+  <div className="flex justify-between items-start">
+
+    <div>
+      <h2 className="text-lg font-bold text-white flex items-center gap-2">
+        🤖 AI Claim Assistant
+      </h2>
+
+      <p className="text-sm text-blue-100 mt-1">
+        Ownership Verification Chat
+      </p>
+    </div>
+
+    <button
+      type="button"
+      onClick={() => {
+        setActionModal(null);
+        setActionReason("");
+        setAnswers(["", "", ""]);
+        setChatMessages([]);
+        setCurrentQuestion(0);
+        setCurrentAnswer("");
+      }}
+      className="text-white text-2xl font-bold hover:text-gray-200 transition"
+    >
+      ×
+    </button>
+
+  </div>
+
+</div>
+             {/* <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                 🤖 AI Claim Assistant
               </h2>
-              <p className="text-xs opacity-80 text-white mt-1 truncate">
-                {actionModal.title}
-              </p>
-            </div>
+                <p className="text-sm text-blue-100 mt-1">
+                    Ownership Verification Chat
+                  </p>
+            </div> */}
 
             <form onSubmit={handleSubmit} className="p-6">
               <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 mb-5">
@@ -505,14 +685,14 @@ export default function Claims() {
 
               {/* <label className="block text-sm font-semibold text-gray-700 mb-2">
               </label> */}
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                {isLostModal
+              {/* <label className="block text-sm font-semibold text-gray-700 mb-2"> */}
+                {/* {isLostModal
                          ? "Where / How did you find it?"
                           : "Proof of Ownership"}{" "}
                     <span className="text-red-500">*</span>
-            </label>
+            </label> */}
 
-            {!isLostModal &&
+            {/* {!isLostModal &&
   CATEGORY_QUESTIONS[actionModal?.category]?.map(
     (question, index) => (
       <div key={index} className="mb-3">
@@ -540,9 +720,207 @@ export default function Claims() {
 
       </div>
     )
+)} */}
+
+{!isLostModal && (
+
+  <div className="mb-4">
+
+    {/* <div className="border rounded-xl p-3 h-64 overflow-y-auto bg-gray-50"> */}
+    <div className="border rounded-2xl p-4 h-80 overflow-y-auto bg-slate-50">
+      <div className="mb-4">
+
+  <div className="flex justify-between text-xs text-gray-500 mb-1">
+
+    <span>
+      Verification Progress
+    </span>
+
+    <span>
+      {answers.filter(a => a.trim() !== "").length}
+      /
+      {(CATEGORY_QUESTIONS[actionModal?.category] || []).length}
+    </span>
+
+  </div>
+
+  <div className="w-full bg-gray-200 rounded-full h-2">
+
+    <div
+      className="bg-blue-600 h-2 rounded-full transition-all"
+      style={{
+        width: `${
+          (
+            answers.filter(
+              a => a.trim() !== ""
+            ).length /
+            (
+              CATEGORY_QUESTIONS[
+                actionModal?.category
+              ]?.length || 1
+            )
+          ) * 100
+        }%`
+      }}
+    />
+
+  </div>
+
+</div>
+
+      {/* {chatMessages.map((msg, index) => (
+
+        <div
+          key={index}
+          className={`mb-3 flex ${
+            msg.sender === "user"
+              ? "justify-end"
+              : "justify-start"
+          }`}
+        > */}
+
+          {/* <div
+            className={`px-3 py-2 rounded-xl max-w-[80%]
+            ${
+              msg.sender === "user"
+                ? "bg-blue-600 text-white"
+                : "bg-white border"
+            }`}
+          >
+            {msg.text}
+          </div>
+
+        </div> */}
+
+        {/* <div
+  key={index}
+  className={`mb-4 flex ${
+    msg.sender === "user"
+      ? "justify-end"
+      : "justify-start"
+  }`}
+> */}
+
+{chatMessages.map((msg, index) => (
+
+<div
+  key={index}
+  className={`mb-4 flex ${
+    msg.sender === "user"
+      ? "justify-end"
+      : "justify-start"
+  }`}
+>
+
+  {msg.sender !== "user" && (
+    <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center mr-2">
+      🤖
+    </div>
+  )}
+
+  <div
+    className={`px-4 py-3 rounded-2xl max-w-[75%]
+    ${
+      msg.sender === "user"
+        ? "bg-blue-600 text-white"
+        : "bg-white border shadow-sm"
+    }`}
+  >
+    {msg.text}
+  </div>
+
+  {msg.sender === "user" && (
+    <div className="w-8 h-8 rounded-full bg-gray-700 text-white flex items-center justify-center ml-2">
+      👤
+    </div>
+  )}
+
+</div>
+
+      ))}
+
+    </div>
+
+    {/* <div className="flex gap-2 mt-3">
+
+      <input
+        type="text"
+        value={currentAnswer}
+        onChange={(e) =>
+          setCurrentAnswer(
+            e.target.value
+          )
+        }
+        className="flex-1 border rounded-xl px-3 py-2"
+        placeholder="Type your answer..."
+      />
+
+      <button
+        type="button"
+        onClick={handleNextQuestion}
+        className="bg-blue-600 text-white px-4 rounded-xl"
+      >
+        Send
+      </button>
+
+    </div> */}
+
+    {!chatMessages.some(msg =>
+  msg.text.includes("Please click Submit")
+) && (
+
+<div className="flex gap-2 mt-3">
+
+  {/* <input
+    type="text"
+    value={currentAnswer}
+    onChange={(e) =>
+      setCurrentAnswer(e.target.value)
+    }
+    className="flex-1 border rounded-xl px-3 py-2"
+    placeholder="Type your answer..."
+  /> */}
+
+  <input
+  type="text"
+  value={currentAnswer}
+  onChange={(e) =>
+    setCurrentAnswer(e.target.value)
+  }
+
+  onKeyDown={(e) => {
+
+    if (e.key === "Enter") {
+
+      e.preventDefault();
+
+      handleNextQuestion();
+
+    }
+
+  }}
+
+  className="flex-1 border rounded-xl px-3 py-2"
+  placeholder="Type your answer..."
+/>
+
+  <button
+    type="button"
+    onClick={handleNextQuestion}
+    className="bg-blue-600 text-white px-4 rounded-xl"
+  >
+    Send
+  </button>
+
+</div>
+
 )}
 
-              <textarea
+  </div>
+
+)}
+
+              {/* <textarea
                 className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none min-h-[120px]"
                 placeholder={
                   isLostModal
@@ -552,7 +930,17 @@ export default function Claims() {
                 value={actionReason}
                 onChange={(e) => setActionReason(e.target.value)}
                 required
-              />
+              /> */}
+
+              {isLostModal && (
+  <textarea
+    className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none min-h-[120px]"
+    placeholder="Describe where you found it and how to identify it..."
+    value={actionReason}
+    onChange={(e) => setActionReason(e.target.value)}
+    required
+  />
+)}
 
               <div className="flex gap-3 mt-5">
                 <button
@@ -562,13 +950,41 @@ export default function Claims() {
                 >
                   Cancel
                 </button>
-                <button
+                {/* <button
                   type="submit"
                   className={`flex-1 py-3 rounded-xl text-white text-sm font-bold transition-colors
                     ${isLostModal ? "bg-orange-500 hover:bg-orange-600" : "bg-blue-600 hover:bg-blue-700"}`}
                 >
                   {isLostModal ? "Submit Report" : "Submit Claim"}
-                </button>
+                </button> */}
+
+               {(
+  isLostModal ||
+
+  answers.filter(
+    (a) => a.trim() !== ""
+  ).length ===
+  (
+    CATEGORY_QUESTIONS[
+      actionModal?.category
+    ]?.length || 0
+  )
+
+) && (
+
+  <button
+    type="submit"
+    className={`flex-1 py-3 rounded-xl text-white text-sm font-bold transition-colors
+    ${
+      isLostModal
+        ? "bg-orange-500 hover:bg-orange-600"
+        : "bg-blue-600 hover:bg-blue-700"
+    }`}
+  >
+    {isLostModal ? "Submit Report" : "Submit Claim"}
+  </button>
+
+)}
               </div>
             </form>
           </div>

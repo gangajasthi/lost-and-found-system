@@ -107,6 +107,24 @@ export default function ReportFound() {
   // };
   const handleSubmit = async (e) => {
   e.preventDefault();
+  if (!/^\d{10}$/.test(form.contactPhone)) {
+    alert("Please enter a valid 10-digit mobile number");
+    return;
+}
+  if (!form.image) {
+    alert("Item Image is required");
+    return;
+  }
+
+  if (!placeImage) {
+    alert("Place Image is required");
+    return;
+  }
+
+  if (!latitude || !longitude) {
+    alert("Please click Get Current Location");
+    return;
+  }
 
   try {
 
@@ -154,7 +172,11 @@ export default function ReportFound() {
       "http://localhost:5000/api/items",
       formData
     );
-
+  //   alert(
+  // response.data.message ||
+  // "Item posted successfully!"
+  //   );
+  alert("Item posted successfully!");
     setSubmitted(true);
 
   } catch (error) {
@@ -193,13 +215,13 @@ export default function ReportFound() {
 
           </div>
 
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">
-            Thank You!
-          </h2>
+         <h2 className="text-2xl font-bold text-green-600 mb-2">
+                Item Posted Successfully!
+        </h2>
 
           <p className="text-gray-500 text-sm mb-2">
-            Your found item report has been submitted successfully.
-          </p>
+  Your found item has been posted successfully and is waiting for admin approval.
+</p>
 
           <p className="text-xs text-blue-600 bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 mb-8">
             ℹ️ The admin will review and approve your report.
@@ -404,19 +426,21 @@ export default function ReportFound() {
 
           <FIELD label="Contact Phone" required>
 
-            <input
+           <input
               type="tel"
               className={INPUT}
-              placeholder="+91 XXXXX XXXXX"
+              placeholder="Enter 10 digit mobile number"
               value={form.contactPhone}
               onChange={set("contactPhone")}
+              maxLength={10}
+              pattern="[0-9]{10}"
               required
-            />
+        />
 
           </FIELD>
 
           <FileUpload
-            label="Item Image"
+            label="Item Image *"
             onChange={(file) =>
               setForm((f) => ({
                 ...f,
@@ -426,12 +450,15 @@ export default function ReportFound() {
           />
 
           <FileUpload
-            label="Place Image"
+            label="Place Image *"
             onChange={(file) =>
             setPlaceImage(file)
   }
 />
     <div>
+        <label className="block text-sm font-semibold text-gray-700 mb-2">
+             Current Location <span className="text-red-500">*</span>
+      </label>
       <button
         type="button"
         onClick={getLocation}

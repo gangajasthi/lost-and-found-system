@@ -34,13 +34,24 @@ exports.createClaim = async (req, res) => {
             claim
         });
 
-    } catch (error) {
+    // } catch (error) {
 
-        res.status(500).json({
-            message: error.message
-        });
+    //     res.status(500).json({
+    //         message: error.message
+    //     });
 
-    }
+    // }
+
+      } catch (error) {
+
+    console.log("CLAIM ERROR:");
+    console.log(error);
+
+    res.status(500).json({
+        message: error.message
+    });
+
+}
 
 };
 

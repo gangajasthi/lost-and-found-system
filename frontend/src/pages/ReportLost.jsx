@@ -1,190 +1,3 @@
-// import React, { useState } from "react";
-// import { useNavigate } from "react-router-dom";
-// import API from "../api/axios";
-
-// const ReportLost = () => {
-
-//     const navigate = useNavigate();
-
-//     const [formData, setFormData] = useState({
-//         title: "",
-//         description: "",
-//         category: "",
-//         location: "",
-//         date: "",
-//         type: "lost"
-//     });
-
-//     const handleChange = (e) => {
-
-//         setFormData({
-//             ...formData,
-//             [e.target.name]: e.target.value
-//         });
-
-//     };
-
-//     const handleSubmit = async (e) => {
-
-//         e.preventDefault();
-
-//         try {
-
-//             const response = await API.post(
-//                 "/items",
-//                 formData
-//             );
-
-//             console.log(response.data);
-
-//             alert("Lost Item Reported Successfully");
-
-//             navigate("/dashboard");
-
-//         } catch (error) {
-
-//             console.log(error);
-
-//             alert(
-//                 error.response?.data?.message ||
-//                 "Failed To Report Item"
-//             );
-
-//         }
-
-//     };
-
-//     return (
-
-//         <div className="min-h-screen bg-[#F4F7FB] flex justify-center items-center px-6 py-10">
-
-//             <div className="bg-white shadow-2xl rounded-3xl w-full max-w-4xl p-10">
-
-//                 <h1 className="text-4xl font-bold text-[#0D47A1] text-center">
-//                     Report Lost Item
-//                 </h1>
-
-//                 <p className="text-center text-gray-500 mt-3">
-//                     Fill the details of your lost item
-//                 </p>
-
-//                 <form
-//                     className="mt-10 space-y-6"
-//                     onSubmit={handleSubmit}
-//                 >
-
-//                     {/* Title */}
-//                     <div>
-
-//                         <label className="block mb-2 font-medium text-gray-700">
-//                             Item Title
-//                         </label>
-
-//                         <input
-//                             type="text"
-//                             name="title"
-//                             value={formData.title}
-//                             onChange={handleChange}
-//                             placeholder="Enter item title"
-//                             className="w-full border border-gray-300 rounded-xl px-5 py-4 outline-none focus:border-[#0D47A1]"
-//                             required
-//                         />
-
-//                     </div>
-
-//                     {/* Description */}
-//                     <div>
-
-//                         <label className="block mb-2 font-medium text-gray-700">
-//                             Description
-//                         </label>
-
-//                         <textarea
-//                             name="description"
-//                             value={formData.description}
-//                             onChange={handleChange}
-//                             placeholder="Describe your item"
-//                             rows="4"
-//                             className="w-full border border-gray-300 rounded-xl px-5 py-4 outline-none focus:border-[#0D47A1]"
-//                             required
-//                         />
-
-//                     </div>
-
-//                     {/* Category */}
-//                     <div>
-
-//                         <label className="block mb-2 font-medium text-gray-700">
-//                             Category
-//                         </label>
-
-//                         <input
-//                             type="text"
-//                             name="category"
-//                             value={formData.category}
-//                             onChange={handleChange}
-//                             placeholder="Example: Wallet, Mobile, ID Card"
-//                             className="w-full border border-gray-300 rounded-xl px-5 py-4 outline-none focus:border-[#0D47A1]"
-//                             required
-//                         />
-
-//                     </div>
-
-//                     {/* Location */}
-//                     <div>
-
-//                         <label className="block mb-2 font-medium text-gray-700">
-//                             Lost Location
-//                         </label>
-
-//                         <input
-//                             type="text"
-//                             name="location"
-//                             value={formData.location}
-//                             onChange={handleChange}
-//                             placeholder="Enter location"
-//                             className="w-full border border-gray-300 rounded-xl px-5 py-4 outline-none focus:border-[#0D47A1]"
-//                             required
-//                         />
-
-//                     </div>
-
-//                     {/* Date */}
-//                     <div>
-
-//                         <label className="block mb-2 font-medium text-gray-700">
-//                             Date
-//                         </label>
-
-//                         <input
-//                             type="date"
-//                             name="date"
-//                             value={formData.date}
-//                             onChange={handleChange}
-//                             className="w-full border border-gray-300 rounded-xl px-5 py-4 outline-none focus:border-[#0D47A1]"
-//                             required
-//                         />
-
-//                     </div>
-
-//                     {/* Submit Button */}
-//                     <button
-//                         type="submit"
-//                         className="w-full bg-[#0D47A1] text-white py-4 rounded-xl text-lg font-semibold hover:bg-blue-800 transition"
-//                     >
-//                         Submit Lost Report
-//                     </button>
-
-//                 </form>
-
-//             </div>
-
-//         </div>
-
-//     );
-
-// };
-
 // export default ReportLost;
 import axios from "axios";
 import { useState } from "react";
@@ -246,6 +59,11 @@ export default function ReportLost() {
 const handleSubmit = async (e) => {
 
     e.preventDefault();
+
+    if (!/^\d{10}$/.test(form.contactPhone)) {
+        alert("Please enter a valid 10-digit mobile number");
+        return;
+    }
 
     setLoading(true);
 
@@ -310,70 +128,6 @@ const handleSubmit = async (e) => {
 
     }
 };
-    // const handleSubmit = async (e) => {
-
-    //     e.preventDefault();
-
-    //     setLoading(true);
-
-    //     try {
-
-    //         const formData = new FormData();
-
-    //         formData.append("title", form.title);
-
-    //         formData.append("description", form.description);
-
-    //         formData.append("category", form.category);
-
-    //         formData.append("location", form.lastLocation);
-
-    //         formData.append("date", form.dateLost);
-
-    //         formData.append("type", "lost");
-
-    //        //const user = JSON.parse(localStorage.getItem("user"));
-    //        const user = JSON.parse(localStorage.getItem("lf_user"));
-    //        //formData.append("userId", user._id);
-
-    //         //formData.append("userId", user._id);
-
-    //         if (form.image) {
-    //             formData.append("image", form.image);
-    //         }
-
-    //         const response = await axios.post(
-    //             "http://localhost:5000/api/items",
-    //             formData,
-    //             {
-    //                 headers: {
-    //                     "Content-Type": "multipart/form-data",
-    //                 },
-    //             }
-    //         );
-
-    //         console.log(response.data);
-
-    //         alert(response.data.message);
-
-    //         setSubmitted(true);
-
-    //     } catch (error) {
-
-    //         console.log(error);
-
-    //         alert(
-    //             error.response?.data?.message ||
-    //             "Failed to submit report"
-    //         );
-
-    //     } finally {
-
-    //         setLoading(false);
-
-    //     }
-    // };
-
 
 
     if (submitted) {
@@ -615,12 +369,23 @@ const handleSubmit = async (e) => {
 
                     <FIELD label="Contact Phone" required>
 
-                        <input
+                        {/* <input
                             type="tel"
                             className={INPUT}
                             placeholder="+91 XXXXX XXXXX"
                             value={form.contactPhone}
                             onChange={set("contactPhone")}
+                            required
+                        /> */}
+
+                       <input
+                            type="tel"
+                            className={INPUT}
+                            placeholder="Enter 10 digit mobile number"
+                            value={form.contactPhone}
+                            onChange={set("contactPhone")}
+                            maxLength={10}
+                            pattern="[0-9]{10}"
                             required
                         />
 

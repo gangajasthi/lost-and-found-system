@@ -239,6 +239,51 @@ const handleResolve = async (id) => {
   </div>
 )}
 
+<div className="mt-4 p-4 rounded-xl bg-gray-50 border">
+
+  <div className="flex justify-between items-center mb-2">
+
+    <span className="font-semibold text-gray-700">
+      🤖 Ownership Confidence Score
+    </span>
+
+    <span
+      className={`font-bold ${
+        claim.verificationScore >= 90
+          ? "text-green-600"
+          : claim.verificationScore >= 60
+          ? "text-yellow-600"
+          : "text-red-600"
+      }`}
+    >
+      {claim.verificationScore || 0}%
+    </span>
+
+  </div>
+
+  <div className="w-full bg-gray-200 rounded-full h-3">
+
+    <div
+      className={`h-3 rounded-full ${
+        claim.verificationScore >= 90
+          ? "bg-green-500"
+          : claim.verificationScore >= 60
+          ? "bg-yellow-500"
+          : "bg-red-500"
+      }`}
+      style={{
+        width: `${claim.verificationScore || 0}%`
+      }}
+    />
+
+  </div>
+
+  <p className="text-xs text-gray-500 mt-2">
+    ⚠️ AI recommendation only. Final approval must be verified by admin.
+  </p>
+
+</div>
+
               </div>
 
               {/* <StatusBadge
