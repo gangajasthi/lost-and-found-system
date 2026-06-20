@@ -4,87 +4,6 @@ import axios from "axios";
 import DashboardLayout from "../components/DashboardLayout";
 import StatusBadge from "../components/StatusBadge";
 
-// ── Analytics Data ──────────────────────────────────────────────
-// const ANALYTICS = [
-//   {
-//     label: "Total Reports",
-//     value: "148",
-//     change: "+12 this week",
-//     positive: true,
-//     color: "blue",
-//     icon: (
-//       <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-//         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-//           d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-//       </svg>
-//     ),
-//   },
-//   {
-//     label: "Pending Approvals",
-//     value: "5",
-//     change: "Needs attention",
-//     positive: false,
-//     color: "amber",
-//     icon: (
-//       <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-//         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-//           d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-//       </svg>
-//     ),
-//   },
-//   {
-//     label: "Items Resolved",
-//     value: "93",
-//     change: "+8 this month",
-//     positive: true,
-//     color: "emerald",
-//     icon: (
-//       <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-//         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-//           d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-//       </svg>
-//     ),
-//   },
-//   {
-//     label: "Active Claims",
-//     value: "17",
-//     change: "+3 today",
-//     positive: true,
-//     color: "purple",
-//     icon: (
-//       <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-//         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-//           d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-//       </svg>
-//     ),
-//   },
-// ];
-
-// const COLOR_MAP = {
-//   blue:    { bg: "bg-blue-50",    icon: "bg-blue-100 text-blue-600",       ring: "ring-blue-200"    },
-//   amber:   { bg: "bg-amber-50",   icon: "bg-amber-100 text-amber-600",     ring: "ring-amber-200"   },
-//   emerald: { bg: "bg-emerald-50", icon: "bg-emerald-100 text-emerald-600", ring: "ring-emerald-200" },
-//   purple:  { bg: "bg-purple-50",  icon: "bg-purple-100 text-purple-600",   ring: "ring-purple-200"  },
-// };
-
-// ── Recent Activity ──────────────────────────────────────────────
-// const RECENT_ACTIVITY = [
-//   { id: 1, action: "approved",       item: "Student ID Card",         by: "Admin",  time: "2 hrs ago",  color: "emerald" },
-//   { id: 2, action: "rejected",       item: "Duplicate wallet report", by: "Admin",  time: "4 hrs ago",  color: "red"     },
-//   { id: 3, action: "claim verified", item: "Laptop Charger",          by: "Admin",  time: "Yesterday",  color: "blue"    },
-//   { id: 4, action: "new report",     item: "Blue Water Bottle",       by: "System", time: "Yesterday",  color: "amber"   },
-//   { id: 5, action: "resolved",       item: "Silver Bracelet",         by: "Admin",  time: "2 days ago", color: "purple"  },
-// ];
-
-// const ACT_COLORS = {
-//   emerald: "bg-emerald-100 text-emerald-700",
-//   red:     "bg-red-100 text-red-700",
-//   blue:    "bg-blue-100 text-blue-700",
-//   amber:   "bg-amber-100 text-amber-700",
-//   purple:  "bg-purple-100 text-purple-700",
-// };
-
-
 // ── View Report Modal ────────────────────────────────────────────
 // Standalone component — owns no state of its own.
 // `report` (the item to show) and `onClose` (setter from AdminDashboard)
@@ -225,7 +144,11 @@ function ReportRow({ report, onApprove, onReject, onOpenFoundModal, onView }) {
           </div>
           <p className="text-xs text-gray-500 mb-2 line-clamp-2">{report.description}</p>
           <div className="flex flex-wrap gap-3 text-xs text-gray-400">
-            <span>👤 {report.userId?.name || "Unknown User"}</span>
+            {/* <span>👤 {report.userId?.name || "Unknown User"}</span> */}
+            {/* <span>
+  👤 {report.userId?.email || "Unknown User"}
+</span> */}
+            <span>📧 {report.userId?.email || "No Email"}</span>
             <span>📍 {report.location}</span>
             <span>📅 {new Date(report.createdAt).toLocaleDateString()}</span>
           </div>

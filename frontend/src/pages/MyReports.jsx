@@ -67,11 +67,17 @@ const fetchReports = async () => {
     console.log("LOGGED USER =", user);
     console.log("USER ID =", user._id);
 
+    // const myReports = response.data.filter(
+    //   (item) =>
+    //     item.userId?.toString() ===
+    //     user?._id?.toString()
+    // );
+
     const myReports = response.data.filter(
-      (item) =>
-        item.userId?.toString() ===
-        user?._id?.toString()
-    );
+  (item) =>
+    item.userId?._id?.toString() ===
+    user?._id?.toString()
+);
 
     console.log("MY REPORTS =", myReports);
 

@@ -1,6 +1,14 @@
 const Item = require("../models/Item");
 const axios = require("axios");
+const nodemailer = require("nodemailer");
 
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
+  }
+});
 // CREATE ITEM
 exports.createItem = async (req, res) => {
     try {
@@ -136,6 +144,26 @@ const items = await Item.find({
         }));
 
         await newItem.save();
+        await transporter.sendMail({
+  from: process.env.EMAIL_USER,
+  to: process.env.ADMIN_EMAIL,
+
+  subject: `New ${newItem.type.toUpperCase()} Item Reported`,
+
+  html: `
+    <h2>New ${newItem.type} Item Reported</h2>
+
+    <p><b>Title:</b> ${newItem.title}</p>
+
+    <p><b>Description:</b> ${newItem.description}</p>
+
+    <p><b>Location:</b> ${newItem.location}</p>
+
+    <p><b>Category:</b> ${newItem.category}</p>
+
+    <p>Please review it in Admin Dashboard.</p>
+  `
+});
 
         res.status(201).json({
             message: "Item Posted Successfully",
@@ -155,12 +183,20 @@ exports.getAllItems = async (req, res) => {
 
     try {
 
+        // const items =
+        //     await Item.find()
+        //         .populate(
+        //             "matchedItems.itemId"
+        //         );
         const items =
-            await Item.find()
-                .populate(
-                    "matchedItems.itemId"
-                );
-
+    await Item.find()
+        .populate(
+            "matchedItems.itemId"
+        )
+        .populate(
+            "userId",
+            "name email"
+        );
         res.status(200).json(items);
 
     } catch (error) {

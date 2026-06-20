@@ -207,8 +207,13 @@ exports.loginUser = async (req, res) => {
     try {
 
         const { email, password, role } = req.body;
-        // Check user
+        console.log("LOGIN EMAIL =", email);
+
         const user = await User.findOne({ email });
+
+        console.log("FOUND USER =", user?.email);
+        // Check user
+        // const user = await User.findOne({ email });
 
         if (!user) {
             return res.status(400).json({

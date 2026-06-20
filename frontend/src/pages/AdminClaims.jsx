@@ -53,7 +53,11 @@ const [rejectReason, setRejectReason] =
 
   const [claims, setClaims] =
     useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
 
+const claimsPerPage = 5;
   useEffect(() => {
     fetchClaims();
   }, []);
@@ -156,6 +160,50 @@ const handleResolve = async (id) => {
 
 };
 
+const filteredClaims = claims.filter((claim) => {
+
+  const matchesSearch =
+    JSON.stringify({
+      title: claim.itemId?.title,
+      claimantName: claim.claimantName,
+      claimantEmail: claim.claimantEmail,
+      status: claim.status
+    })
+      .toLowerCase()
+      .includes(
+        searchTerm.toLowerCase()
+      );
+
+  const matchesStatus =
+    statusFilter === "all"
+      ? true
+      : claim.status === statusFilter;
+
+  return (
+    matchesSearch &&
+    matchesStatus
+  );
+
+});
+
+const indexOfLastClaim =
+  currentPage * claimsPerPage;
+
+const indexOfFirstClaim =
+  indexOfLastClaim - claimsPerPage;
+
+const currentClaims =
+  filteredClaims.slice(
+    indexOfFirstClaim,
+    indexOfLastClaim
+  );
+
+const totalPages =
+  Math.ceil(
+    filteredClaims.length /
+    claimsPerPage
+  );
+
   return (
 
    <DashboardLayout isAdmin>
@@ -163,7 +211,7 @@ const handleResolve = async (id) => {
 //   TEST
 // </div> */}
       {/* <div className="mb-6"> */}
-      <div className="container mx-auto">
+      {/* <div className="container mx-auto">
 
         <h1 className="text-xl font-bold text-gray-900">
           Claims
@@ -173,16 +221,87 @@ const handleResolve = async (id) => {
           View and manage submitted claims
         </p>
 
-      </div>
+      </div> */}
 
-      <div className="space-y-4">
+      <div className="container mx-auto">
 
-        {claims.map((claim) => (
+  <h1 className="text-xl font-bold text-gray-900">
+    Claims
+  </h1>
+
+  <p className="text-sm text-gray-500">
+    View and manage submitted claims
+  </p>
+
+  <div className="mt-4">
+    <input
+      type="text"
+      placeholder="🔍 Search by item, name, email or status..."
+      value={searchTerm}
+      onChange={(e) =>
+        setSearchTerm(e.target.value)
+      }
+      className="w-full md:w-96 px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+    />
+  </div>
+
+  <div className="flex gap-2 flex-wrap mt-4">
+
+  {[
+    "all",
+    "pending",
+    "approved",
+    "rejected"
+  ].map((status) => (
+
+    <button
+      key={status}
+      onClick={() => {
+        setStatusFilter(status);
+        setCurrentPage(1);
+      }}
+      className={`px-4 py-2 rounded-xl text-sm font-semibold
+
+      ${
+        statusFilter === status
+          ? "bg-blue-600 text-white"
+          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+      }`}
+    >
+      {status.charAt(0).toUpperCase() +
+        status.slice(1)}
+    </button>
+
+  ))}
+
+</div>
+
+</div>
+
+      {/* <div className="space-y-4">
+
+        {filteredClaims.map((claim) => (
 
           <div
             key={claim._id}
             className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5"
-          >
+          > */}
+
+          <div className="space-y-4">
+
+  {filteredClaims.length === 0 && (
+    <div className="bg-white rounded-xl p-6 text-center text-gray-500">
+      No matching claims found
+    </div>
+  )}
+
+  {/* {filteredClaims.map((claim) => ( */}
+  {currentClaims.map((claim) => (
+
+    <div
+      key={claim._id}
+      className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5"
+    >
 
             <div className="flex justify-between items-start">
 
@@ -345,6 +464,37 @@ const handleResolve = async (id) => {
 
       </div>
 
+      {totalPages > 1 && (
+
+        <div className="flex justify-center items-center gap-4 mt-6">
+
+          <button
+            disabled={currentPage === 1}
+            onClick={() =>
+              setCurrentPage(currentPage - 1)
+            }
+            className="px-4 py-2 border rounded-xl disabled:opacity-50"
+          >
+            ← Previous
+          </button>
+
+          <span className="font-semibold">
+            Page {currentPage} of {totalPages}
+          </span>
+
+          <button
+            disabled={currentPage === totalPages}
+            onClick={() =>
+              setCurrentPage(currentPage + 1)
+            }
+            className="px-4 py-2 border rounded-xl disabled:opacity-50"
+          >
+            Next →
+          </button>
+
+        </div>
+
+      )}
 
       {rejectModal && (
   <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
