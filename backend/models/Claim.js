@@ -51,6 +51,11 @@ const claimSchema = new mongoose.Schema({
     default: 0
 },
 
+    source: {
+    type: String,
+    default: "user"
+},
+
     status: {
         type: String,
         default: "pending"

@@ -210,7 +210,8 @@ const handleResolve = async (id) => {
                   {claim.message}
                 </p>
 
-                {claim.answers?.length > 0 && (
+                {claim.source !== "ai" &&
+ claim.answers?.length > 0 && (
   <div className="mt-4 p-3 rounded-xl bg-blue-50 border border-blue-200">
 
     <h4 className="text-sm font-bold text-blue-900 mb-3">
@@ -239,6 +240,22 @@ const handleResolve = async (id) => {
   </div>
 )}
 
+{claim.source === "ai" && (
+  <div className="mt-4 p-3 rounded-xl bg-purple-50 border border-purple-200">
+
+    <h4 className="font-semibold text-purple-800">
+      🤖 AI Match Approved
+    </h4>
+
+    <p className="text-sm text-purple-600 mt-1">
+      This item was automatically matched and approved by the AI system.
+    </p>
+
+  </div>
+)}
+
+
+{claim.source !== "ai" && (
 <div className="mt-4 p-4 rounded-xl bg-gray-50 border">
 
   <div className="flex justify-between items-center mb-2">
@@ -283,7 +300,7 @@ const handleResolve = async (id) => {
   </p>
 
 </div>
-
+)}
               </div>
 
               {/* <StatusBadge
