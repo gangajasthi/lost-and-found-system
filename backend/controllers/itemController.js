@@ -1,13 +1,16 @@
+const Claim = require("../models/Claim");
+const User = require("../models/User");
 const Item = require("../models/Item");
 const axios = require("axios");
+
 const nodemailer = require("nodemailer");
 
 const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  }
+    service: "gmail",
+    auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+    }
 });
 // CREATE ITEM
 exports.createItem = async (req, res) => {
@@ -319,6 +322,25 @@ exports.approveMatch = async (req, res) => {
         const matchedId =
             existingItem.matchedItems?.[0]?.itemId;
 
+        const matchedItem =
+            matchedId
+                ? await Item.findById(matchedId)
+                : null;
+
+        let lostItem = null;
+
+        if (existingItem.type === "lost") {
+            lostItem = existingItem;
+        }
+        else if (matchedItem?.type === "lost") {
+            lostItem = matchedItem;
+        }
+
+        const owner =
+            lostItem
+                ? await User.findById(lostItem.userId)
+                : null;
+
         // Approve this item
         await Item.findByIdAndUpdate(
             existingItem._id,
@@ -373,6 +395,110 @@ exports.approveMatch = async (req, res) => {
             }
         );
 
+        
+        if (lostItem && owner) {
+
+    const existingClaim =
+        await Claim.findOne({
+            itemId: lostItem._id,
+            source: "ai"
+        });
+
+    if (!existingClaim) {
+
+        await Claim.create({
+
+            userId: owner._id,
+
+            itemId: lostItem._id,
+
+            claimantName: owner.name,
+
+            claimantEmail: owner.email,
+
+            message: "AI Match Approved",
+
+            status: "approved",
+
+            source: "ai"
+
+        });
+
+    }
+
+    // Always update notifications
+    if (matchedItem) {
+
+        await Item.findByIdAndUpdate(
+    matchedItem._id,
+    {
+        notification:
+        `✅ Your found item "${matchedItem.title}" has been successfully matched with its owner.`
+    }
+);
+
+        const finder = await User.findById(matchedItem.userId);
+     
+
+    console.log("OWNER EMAIL =", owner.email);
+
+
+if (finder) {
+      console.log("FINDER EMAIL =", finder.email);
+
+    await transporter.sendMail({
+
+        from: process.env.EMAIL_USER,
+
+        to: finder.email,
+
+        subject: "Item Successfully Matched",
+
+        text: `Hello ${finder.name},
+
+The item you reported has been successfully matched with its owner.
+
+Thank you for helping someone recover their item.
+
+Lost & Found Team`
+
+    });
+
+}
+
+    }
+
+
+   await Item.findByIdAndUpdate(
+    lostItem._id,
+    {
+        notification:
+        `🎉 AI Match approved for "${lostItem.title}". Please collect your item from admin.`
+    }
+);
+
+    await transporter.sendMail({
+
+            from: process.env.EMAIL_USER,
+
+            to: owner.email,
+
+            subject: "AI Match Approved - Lost & Found",
+
+            text: `Hello ${owner.name},
+
+        Good news!
+
+        Your lost item "${lostItem.title}" has been successfully matched and approved by the admin.
+
+        Please visit the Lost & Found desk to collect your item.
+
+        Thank you,
+        Lost & Found Team`
+
+        });
+
+}
         return res.status(200).json({
             message: "Match approved successfully"
         });

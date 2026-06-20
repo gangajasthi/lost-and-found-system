@@ -225,6 +225,17 @@ exports.updateClaimStatus =
         }
       ).populate("itemId");
 
+      if (req.body.status === "approved") {
+
+          await Item.findByIdAndUpdate(
+            claim.itemId._id,
+            {
+              resolved: true
+            }
+          );
+
+        }
+
       await transporter.sendMail({
 
         from:
