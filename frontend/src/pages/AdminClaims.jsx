@@ -162,6 +162,11 @@ const handleResolve = async (id) => {
 
 const filteredClaims = claims.filter((claim) => {
 
+  // Hide resolved claims
+  if (claim.itemId?.handoverCompleted) {
+    return false;
+  }
+
   const matchesSearch =
     JSON.stringify({
       title: claim.itemId?.title,
@@ -287,7 +292,7 @@ const totalPages =
             className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5"
           > */}
 
-          <div className="space-y-4">
+          <div className="space-y-4 mt-5">
 
   {filteredClaims.length === 0 && (
     <div className="bg-white rounded-xl p-6 text-center text-gray-500">

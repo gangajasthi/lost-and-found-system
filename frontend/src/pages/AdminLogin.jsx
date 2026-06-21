@@ -55,7 +55,7 @@ const AdminLogin = () => {
 
             alert("Admin Login Successful");
 
-            navigate("/admin-dashboard");
+            navigate("/admin-overview");
 
         } catch (error) {
 
@@ -76,7 +76,7 @@ const AdminLogin = () => {
             <div className="bg-white rounded-3xl shadow-2xl overflow-hidden max-w-5xl w-full grid md:grid-cols-2">
 
                 {/* Left Side */}
-                <div className="bg-[#FF6F00] text-white p-14 flex flex-col justify-center">
+                <div className="bg-[#0D47A1] text-white p-14 flex flex-col justify-center">
 
                     <img
                         src={logo}
@@ -88,7 +88,7 @@ const AdminLogin = () => {
                         Admin Portal
                     </h1>
 
-                    <p className="mt-6 text-lg leading-8 text-orange-100">
+                    <p className="mt-6 text-lg leading-8 text-blue-100">
                         Secure administrator access for managing
                         lost reports, found items, claims,
                         and verification requests.
@@ -123,7 +123,7 @@ const AdminLogin = () => {
                                 value={formData.email}
                                 onChange={handleChange}
                                 placeholder="Enter admin email"
-                                className="w-full border border-gray-300 rounded-xl px-5 py-4 outline-none focus:border-[#FF6F00]"
+                                className="w-full border border-gray-300 rounded-xl px-5 py-4 outline-none focus:border-[#0D47A1]"
                                 required
                             />
                         </div>
@@ -146,7 +146,7 @@ const AdminLogin = () => {
 
                         <button
                             type="submit"
-                            className="w-full bg-[#FF6F00] text-white py-4 rounded-xl text-lg font-semibold hover:bg-orange-600 transition"
+                            className="w-full bg-[#0D47A1] text-white py-4 rounded-xl text-lg font-semibold hover:bg-blue-900 transition"
                         >
                             Admin Login
                         </button>

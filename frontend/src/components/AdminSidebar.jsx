@@ -18,6 +18,10 @@ export default function AdminSidebar() {
       path: "/admin-claims",
     },
     {
+      name: "Resolved Items",
+      path: "/resolved-items",
+    },
+    {
       name: "Approved Items",
       path: "/approved-items",
     },
