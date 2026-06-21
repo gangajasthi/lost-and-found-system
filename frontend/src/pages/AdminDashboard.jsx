@@ -3,6 +3,8 @@ import axios from "axios";
 // import { useNavigate } from "react-router-dom";
 import DashboardLayout from "../components/DashboardLayout";
 import StatusBadge from "../components/StatusBadge";
+// import LostFoundPieChart from "../components/charts/LostFoundPieChart";
+// import StatusBarChart from "../components/charts/StatusBarChart";
 
 // ── View Report Modal ────────────────────────────────────────────
 // Standalone component — owns no state of its own.

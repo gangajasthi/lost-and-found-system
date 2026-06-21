@@ -147,9 +147,12 @@ const items = await Item.find({
         }));
 
         await newItem.save();
+        // console.log("EMAIL_USER =", process.env.EMAIL_USER);
+        // console.log("ADMIN_EMAIL =", process.env.ADMIN_EMAIL);
         await transporter.sendMail({
   from: process.env.EMAIL_USER,
   to: process.env.ADMIN_EMAIL,
+// to: process.env.EMAIL_USER,
 
   subject: `New ${newItem.type.toUpperCase()} Item Reported`,
 
@@ -328,6 +331,7 @@ exports.approveMatch = async (req, res) => {
                 : null;
 
         let lostItem = null;
+        console.log("MATCHED ITEM =", matchedItem);
 
         if (existingItem.type === "lost") {
             lostItem = existingItem;
@@ -340,6 +344,8 @@ exports.approveMatch = async (req, res) => {
             lostItem
                 ? await User.findById(lostItem.userId)
                 : null;
+        console.log("LOST ITEM =", lostItem);
+        console.log("OWNER =", owner);
 
         // Approve this item
         await Item.findByIdAndUpdate(
@@ -440,8 +446,9 @@ exports.approveMatch = async (req, res) => {
         const finder = await User.findById(matchedItem.userId);
      
 
-    console.log("OWNER EMAIL =", owner.email);
-
+    // console.log("OWNER EMAIL =", owner.email);
+console.log("OWNER EMAIL =", owner?.email);
+// console.log("FINDER EMAIL =", finder?.email);
 
 if (finder) {
       console.log("FINDER EMAIL =", finder.email);

@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import DashboardLayout from "../components/DashboardLayout";
+import LostFoundPieChart from "../components/charts/LostFoundPieChart";
+import StatusBarChart from "../components/charts/StatusBarChart";
 
 export default function AdminOverview() {
 
@@ -95,6 +97,25 @@ export default function AdminOverview() {
         <h3 className="text-sm text-gray-500">Found Reports</h3>
         <p className="text-3xl font-bold mt-2">{foundReports}</p>
       </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
+
+  <div className="bg-white rounded-3xl shadow-lg border p-6">
+  <LostFoundPieChart
+    lost={lostReports}
+    found={foundReports}
+  />
+</div>
+
+<div className="bg-white rounded-3xl shadow-lg border p-6">
+  <StatusBarChart
+    pending={pendingReports}
+    approved={approvedItems}
+    rejected={rejectedItems}
+  />
+</div>
+</div>
 
       {/* <div className="bg-white p-5 rounded-2xl shadow-sm border">
         <h3 className="text-sm text-gray-500">AI Matches</h3>
@@ -106,7 +127,6 @@ export default function AdminOverview() {
         <p className="text-3xl font-bold mt-2">{recoveryRate}%</p>
       </div> */}
 
-    </div>
   </DashboardLayout>
 );
 }
