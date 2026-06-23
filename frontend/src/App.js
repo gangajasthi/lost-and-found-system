@@ -17,6 +17,7 @@ import RejectedItems from "./pages/RejectedItems";
 import ForgotPassword from "./pages/ForgotPassword";
 import AdminClaims from "./pages/AdminClaims";
 import AdminOverview from "./pages/AdminOverview";
+import ResolvedItems from "./pages/ResolvedItems";
 
 function App() {
   return (
@@ -63,6 +64,8 @@ function App() {
         <Route path="/admin-claims" element={<AdminClaims />} />
 
         <Route path="/admin-overview" element={<AdminOverview />}/>
+
+        <Route path="/resolved-items"  element={<ResolvedItems />}/>
 
       </Routes>
 
